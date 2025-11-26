@@ -1,0 +1,54 @@
+name: travel_flutter_app
+description: 위치 기반 여행 정보 및 AI 추천 기능을 제공하는 Flutter 앱
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.4.10
+
+  # Location services
+  geolocator: ^11.0.0
+  google_maps_flutter: ^2.5.3
+
+  # HTTP requests
+  http: ^1.2.0
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Calendar
+  table_calendar: ^3.0.9
+
+  # Internationalization
+  intl: ^0.19.0
+
+  # Navigation
+  go_router: ^13.0.0
+
+  # Environment variables
+  flutter_dotenv: ^5.1.0
+
+  # Icons
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+    # - assets/images/
