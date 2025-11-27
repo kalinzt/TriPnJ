@@ -113,6 +113,16 @@ class AppColors {
   static const Color categoryAdventure = Color(0xFFFFCA28); // Amber 400
   static const Color categoryRelax = Color(0xFF26C6DA); // Cyan 400
 
+  // PlaceCategory용 추가 색상
+  static const Color categoryActivity = Color(0xFFFFCA28); // Amber 400 - 액티비티
+  static const Color categoryResort = Color(0xFF26C6DA); // Cyan 400 - 휴양지
+  static const Color categoryShopping = Color(0xFFEF5350); // Red 400 - 쇼핑
+  static const Color categoryAttraction = Color(0xFF42A5F5); // Blue 400 - 명소
+  static const Color categoryRestaurant = Color(0xFFFF7043); // Deep Orange 400 - 음식점
+  static const Color categoryCafe = Color(0xFF8D6E63); // Brown 400 - 카페
+  static const Color categoryAccommodation = Color(0xFF7E57C2); // Deep Purple 400 - 숙박
+  static const Color categoryNightlife = Color(0xFFEC407A); // Pink 400 - 야간
+
   // ============================================
   // Rating Colors
   // ============================================
