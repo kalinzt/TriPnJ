@@ -41,6 +41,9 @@ dependencies:
   # Icons
   cupertino_icons: ^1.0.2
 
+  # Sharing
+  share_plus: ^7.2.2
+
   # Code generation
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
