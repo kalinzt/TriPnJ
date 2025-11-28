@@ -5,6 +5,7 @@ import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/plan/presentation/screens/plan_screen.dart';
+import '../../features/plan/presentation/screens/calendar_view_screen.dart';
 import '../../features/accommodation/presentation/screens/accommodation_screen.dart';
 import '../../features/ai_recommend/presentation/screens/ai_recommend_screen.dart';
 
@@ -40,6 +41,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/plan',
         name: AppRoutes.plan,
         builder: (context, state) => const PlanScreen(),
+      ),
+      GoRoute(
+        path: '/plan/calendar',
+        name: AppRoutes.planCalendar,
+        builder: (context, state) => const CalendarViewScreen(),
       ),
       GoRoute(
         path: '/accommodation',
@@ -117,6 +123,7 @@ class AppRoutes {
   static const String home = 'home';
   static const String explore = 'explore';
   static const String plan = 'plan';
+  static const String planCalendar = 'plan-calendar';
   static const String accommodation = 'accommodation';
   static const String aiRecommend = 'ai-recommend';
 
