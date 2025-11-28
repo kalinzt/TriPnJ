@@ -48,6 +48,9 @@ dependencies:
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
 
+  # UUID generation
+  uuid: ^4.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
