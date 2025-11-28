@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/services/location_service.dart';
+import '../../../../shared/models/place.dart';
 import '../../../../shared/models/place_category.dart';
 import '../../data/providers/places_provider.dart';
 import '../widgets/category_filter.dart';
 import '../widgets/place_card.dart';
 import '../widgets/explore_search_bar.dart';
+import '../widgets/places_map_view.dart';
 
 /// 탐색 화면 - 위치 기반 여행지 검색 및 둘러보기
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -160,43 +163,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  /// 지도 뷰 (추후 구현)
-  Widget _buildMapView(List<dynamic> places) {
-    return RefreshIndicator(
-      onRefresh: _onRefresh,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 80,
-              color: AppColors.textHint,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '지도 뷰',
-              style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '지도 기능은 곧 제공됩니다',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textHint,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _toggleView,
-              icon: const Icon(Icons.list),
-              label: const Text('목록으로 보기'),
-            ),
-          ],
-        ),
-      ),
-    );
+  /// 지도 뷰
+  Widget _buildMapView(List<Place> places) {
+    return ref.watch(currentLocationProvider).when(
+          data: (position) {
+            return PlacesMapView(
+              places: places,
+              currentLatitude: position.latitude,
+              currentLongitude: position.longitude,
+            );
+          },
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          error: (error, stack) {
+            // 위치를 가져오지 못해도 지도는 표시
+            return PlacesMapView(
+              places: places,
+            );
+          },
+        );
   }
 
   /// 로딩 뷰
