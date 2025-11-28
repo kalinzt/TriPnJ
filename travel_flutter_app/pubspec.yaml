@@ -44,6 +44,9 @@ dependencies:
   # Sharing
   share_plus: ^7.2.2
 
+  # URL launcher
+  url_launcher: ^6.2.5
+
   # Code generation
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1

@@ -10,10 +10,12 @@ import '../screens/place_detail_screen.dart';
 /// 여행지 카드 위젯
 class PlaceCard extends ConsumerStatefulWidget {
   final Place place;
+  final VoidCallback? onTap; // 커스텀 탭 핸들러 (장소 선택 모드용)
 
   const PlaceCard({
     super.key,
     required this.place,
+    this.onTap,
   });
 
   @override
@@ -31,6 +33,13 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
   }
 
   void _navigateToDetail() {
+    // 커스텀 onTap이 있으면 그것을 사용 (장소 선택 모드)
+    if (widget.onTap != null) {
+      widget.onTap!();
+      return;
+    }
+
+    // 기본 동작: 상세 화면으로 이동
     Navigator.push(
       context,
       MaterialPageRoute(

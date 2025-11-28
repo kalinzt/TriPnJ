@@ -13,7 +13,12 @@ import '../widgets/places_map_view.dart';
 
 /// 탐색 화면 - 위치 기반 여행지 검색 및 둘러보기
 class ExploreScreen extends ConsumerStatefulWidget {
-  const ExploreScreen({super.key});
+  final bool isPlaceSelection; // 장소 선택 모드 (여행 계획에서 사용)
+
+  const ExploreScreen({
+    super.key,
+    this.isPlaceSelection = false,
+  });
 
   @override
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
@@ -156,7 +161,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           final place = places[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: PlaceCard(place: place),
+            child: PlaceCard(
+              place: place,
+              onTap: widget.isPlaceSelection
+                  ? () => Navigator.pop(context, place)
+                  : null,
+            ),
           );
         },
       ),

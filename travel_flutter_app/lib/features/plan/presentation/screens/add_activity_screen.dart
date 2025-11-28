@@ -1,0 +1,613 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/utils/logger.dart';
+import '../../../../shared/models/place.dart';
+import '../../../../shared/models/trip_plan.dart';
+import '../../../explore/presentation/screens/explore_screen.dart';
+import '../../data/providers/trip_provider.dart';
+
+/// 활동 추가/편집 화면
+class AddActivityScreen extends ConsumerStatefulWidget {
+  final String tripId;
+  final DateTime date;
+  final Activity? activity; // null이면 새 활동, 있으면 수정
+
+  const AddActivityScreen({
+    super.key,
+    required this.tripId,
+    required this.date,
+    this.activity,
+  });
+
+  @override
+  ConsumerState<AddActivityScreen> createState() => _AddActivityScreenState();
+}
+
+class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _memoController = TextEditingController();
+  final _costController = TextEditingController();
+  final _reservationController = TextEditingController();
+  final _durationController = TextEditingController();
+
+  TimeOfDay? _startTime;
+  TimeOfDay? _endTime;
+  Place? _selectedPlace;
+  ActivityType _selectedType = ActivityType.visit;
+
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadActivityData();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _memoController.dispose();
+    _costController.dispose();
+    _reservationController.dispose();
+    _durationController.dispose();
+    super.dispose();
+  }
+
+  /// 활동 데이터 로드 (수정 모드일 때)
+  void _loadActivityData() {
+    if (widget.activity != null) {
+      final activity = widget.activity!;
+      _titleController.text = activity.title ?? '';
+      _memoController.text = activity.memo ?? '';
+      _costController.text = activity.estimatedCost != null
+          ? activity.estimatedCost!.toStringAsFixed(0)
+          : '';
+      _reservationController.text = activity.reservationInfo ?? '';
+      _durationController.text = activity.durationMinutes != null
+          ? activity.durationMinutes!.toString()
+          : '';
+
+      if (activity.startTime != null) {
+        _startTime = TimeOfDay.fromDateTime(activity.startTime!);
+      }
+      if (activity.endTime != null) {
+        _endTime = TimeOfDay.fromDateTime(activity.endTime!);
+      }
+
+      _selectedPlace = activity.place;
+      _selectedType = activity.type;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.activity == null ? '활동 추가' : '활동 수정'),
+        actions: [
+          if (_isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              ),
+            )
+          else
+            TextButton(
+              onPressed: _saveActivity,
+              child: const Text(
+                '저장',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // 날짜 표시
+            _buildDateHeader(),
+            const SizedBox(height: 24),
+
+            // 활동 유형 선택
+            _buildSectionTitle('활동 유형'),
+            const SizedBox(height: 8),
+            _buildActivityTypeSelector(),
+            const SizedBox(height: 24),
+
+            // 시간 선택
+            _buildSectionTitle('시간'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTimeSelector(
+                    label: '시작 시간',
+                    time: _startTime,
+                    onTap: () => _selectTime(isStartTime: true),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTimeSelector(
+                    label: '종료 시간',
+                    time: _endTime,
+                    onTap: () => _selectTime(isStartTime: false),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // 소요 시간 (선택사항)
+            _buildSectionTitle('소요 시간 (선택사항)'),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _durationController,
+              decoration: const InputDecoration(
+                hintText: '예상 소요 시간',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+                suffixText: '분',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 24),
+
+            // 장소 선택
+            _buildSectionTitle('장소'),
+            const SizedBox(height: 8),
+            _buildPlaceSelector(),
+            const SizedBox(height: 24),
+
+            // 활동 제목 (장소가 없을 때 필수)
+            if (_selectedPlace == null) ...[
+              _buildSectionTitle('활동 제목'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  hintText: '예: 자유 시간',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                validator: (value) {
+                  if (_selectedPlace == null &&
+                      (value == null || value.trim().isEmpty)) {
+                    return '활동 제목을 입력해주세요';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            // 메모 (선택사항)
+            _buildSectionTitle('메모 (선택사항)'),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _memoController,
+              decoration: const InputDecoration(
+                hintText: '활동에 대한 메모를 입력하세요',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 24),
+
+            // 예상 비용 (선택사항)
+            _buildSectionTitle('예상 비용 (선택사항)'),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _costController,
+              decoration: const InputDecoration(
+                hintText: '예상 비용',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+                suffixText: '원',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 24),
+
+            // 예약 정보 (선택사항)
+            _buildSectionTitle('예약 정보 (선택사항)'),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _reservationController,
+              decoration: const InputDecoration(
+                hintText: '예: 예약 번호 123456',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // 저장 버튼
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _saveActivity,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.textSecondary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        '저장',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 날짜 헤더
+  Widget _buildDateHeader() {
+    final dateFormat = DateFormat('yyyy년 MM월 dd일 (E)', 'ko');
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.calendar_today, color: AppColors.primary),
+          const SizedBox(width: 12),
+          Text(
+            dateFormat.format(widget.date),
+            style: AppTextStyles.titleSmall.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 섹션 제목
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: AppTextStyles.titleSmall.copyWith(
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  /// 활동 유형 선택
+  Widget _buildActivityTypeSelector() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: ActivityType.values.map((type) {
+        final isSelected = _selectedType == type;
+        return FilterChip(
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(type.iconName),
+              const SizedBox(width: 4),
+              Text(type.displayName),
+            ],
+          ),
+          selected: isSelected,
+          onSelected: (selected) {
+            setState(() {
+              _selectedType = type;
+            });
+          },
+          selectedColor: type.color.withValues(alpha: 0.2),
+          checkmarkColor: type.color,
+        );
+      }).toList(),
+    );
+  }
+
+  /// 시간 선택 위젯
+  Widget _buildTimeSelector({
+    required String label,
+    required TimeOfDay? time,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(
+                  Icons.access_time,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  time != null ? time.format(context) : '시간 선택',
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 장소 선택 위젯
+  Widget _buildPlaceSelector() {
+    if (_selectedPlace != null) {
+      return Card(
+        child: ListTile(
+          leading: const Icon(Icons.place, color: AppColors.primary),
+          title: Text(_selectedPlace!.name),
+          subtitle: Text(
+            _selectedPlace!.address,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              setState(() {
+                _selectedPlace = null;
+              });
+            },
+          ),
+        ),
+      );
+    }
+
+    return OutlinedButton.icon(
+      onPressed: _searchPlace,
+      icon: const Icon(Icons.search),
+      label: const Text('장소 검색'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.all(16),
+        minimumSize: const Size.fromHeight(56),
+      ),
+    );
+  }
+
+  /// 시간 선택
+  Future<void> _selectTime({required bool isStartTime}) async {
+    final initialTime = isStartTime
+        ? (_startTime ?? const TimeOfDay(hour: 9, minute: 0))
+        : (_endTime ?? _startTime ?? const TimeOfDay(hour: 9, minute: 0));
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime != null) {
+      setState(() {
+        if (isStartTime) {
+          _startTime = pickedTime;
+        } else {
+          _endTime = pickedTime;
+        }
+      });
+    }
+  }
+
+  /// 장소 검색
+  void _searchPlace() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ExploreScreen(isPlaceSelection: true),
+      ),
+    ).then((selectedPlace) {
+      if (selectedPlace != null && selectedPlace is Place) {
+        setState(() {
+          _selectedPlace = selectedPlace;
+        });
+      }
+    });
+  }
+
+  /// 활동 저장
+  Future<void> _saveActivity() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // DateTime 생성
+      DateTime? startDateTime;
+      DateTime? endDateTime;
+
+      if (_startTime != null) {
+        startDateTime = DateTime(
+          widget.date.year,
+          widget.date.month,
+          widget.date.day,
+          _startTime!.hour,
+          _startTime!.minute,
+        );
+      }
+
+      if (_endTime != null) {
+        endDateTime = DateTime(
+          widget.date.year,
+          widget.date.month,
+          widget.date.day,
+          _endTime!.hour,
+          _endTime!.minute,
+        );
+      }
+
+      // 활동 생성
+      final activity = Activity(
+        id: widget.activity?.id ?? const Uuid().v4(),
+        startTime: startDateTime,
+        endTime: endDateTime,
+        durationMinutes: _durationController.text.isNotEmpty
+            ? int.tryParse(_durationController.text)
+            : null,
+        place: _selectedPlace,
+        title: _titleController.text.trim().isNotEmpty
+            ? _titleController.text.trim()
+            : null,
+        type: _selectedType,
+        memo: _memoController.text.trim().isNotEmpty
+            ? _memoController.text.trim()
+            : null,
+        estimatedCost: _costController.text.isNotEmpty
+            ? double.tryParse(_costController.text)
+            : null,
+        reservationInfo: _reservationController.text.trim().isNotEmpty
+            ? _reservationController.text.trim()
+            : null,
+        isCompleted: widget.activity?.isCompleted ?? false,
+      );
+
+      if (widget.activity == null) {
+        // 새 활동 추가
+        await ref.read(allTripsProvider.notifier).addActivity(
+              tripId: widget.tripId,
+              date: widget.date,
+              activity: activity,
+            );
+      } else {
+        // 기존 활동 수정
+        await ref.read(allTripsProvider.notifier).updateActivity(
+              tripId: widget.tripId,
+              date: widget.date,
+              activity: activity,
+            );
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              widget.activity == null
+                  ? '활동이 추가되었습니다'
+                  : '활동이 수정되었습니다',
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      Logger.error('활동 저장 실패', e, stackTrace, 'AddActivityScreen');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('활동 저장에 실패했습니다'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+}
+
+/// ActivityType 확장 - 색상 추가 (activity_card.dart와 동일)
+extension ActivityTypeColor on ActivityType {
+  Color get color {
+    switch (this) {
+      case ActivityType.visit:
+        return AppColors.primary;
+      case ActivityType.meal:
+        return AppColors.warning;
+      case ActivityType.accommodation:
+        return AppColors.info;
+      case ActivityType.transportation:
+        return AppColors.textSecondary;
+      case ActivityType.shopping:
+        return const Color(0xFFE91E63);
+      case ActivityType.activity:
+        return AppColors.success;
+      case ActivityType.rest:
+        return const Color(0xFF9C27B0);
+      case ActivityType.other:
+        return AppColors.textSecondary;
+    }
+  }
+}
