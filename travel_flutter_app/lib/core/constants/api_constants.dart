@@ -200,3 +200,59 @@ class ApiConstants {
     return radius;
   }
 }
+
+/// 추천 시스템 관련 상수
+class RecommendationConstants {
+  RecommendationConstants._();
+
+  // ============================================
+  // API Rate Limiting
+  // ============================================
+
+  /// 분당 최대 API 호출 횟수
+  static const int maxApiCallsPerMinute = 60;
+
+  /// Rate Limit 윈도우 (1분)
+  static const Duration rateLimitWindow = Duration(minutes: 1);
+
+  /// 최대 동시 요청 수
+  static const int maxConcurrentRequests = 5;
+
+  // ============================================
+  // Cache Configuration
+  // ============================================
+
+  /// 추천 캐시 Box 이름
+  static const String cacheBoxName = 'recommendations_cache';
+
+  /// 캐시 만료 시간 (24시간)
+  static const Duration cacheExpiry = Duration(hours: 24);
+
+  // ============================================
+  // Batch Processing
+  // ============================================
+
+  /// 배치 크기 (한 번에 처리할 장소 수)
+  static const int batchSize = 20;
+
+  /// 추가 로드 시 가져올 개수
+  static const int loadMoreSize = 20;
+
+  // ============================================
+  // Search Configuration
+  // ============================================
+
+  /// 기본 추천 개수
+  static const int defaultRecommendationCount = 20;
+
+  /// 최대 추천 개수
+  static const int maxRecommendationCount = 100;
+
+  // ============================================
+  // Helper Methods
+  // ============================================
+
+  /// Rate Limit 체크 간격 (밀리초)
+  static int get rateLimitCheckIntervalMs =>
+      rateLimitWindow.inMilliseconds ~/ maxApiCallsPerMinute;
+}
