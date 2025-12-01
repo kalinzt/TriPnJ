@@ -8,6 +8,7 @@ import '../../features/plan/presentation/screens/plan_screen.dart';
 import '../../features/plan/presentation/screens/calendar_view_screen.dart';
 import '../../features/accommodation/presentation/screens/accommodation_screen.dart';
 import '../../features/ai_recommend/presentation/screens/ai_recommend_screen.dart';
+import '../../features/local_recommend/presentation/screens/local_recommend_screen.dart';
 
 /// Go Router 설정 Provider
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -56,6 +57,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/ai-recommend',
         name: AppRoutes.aiRecommend,
         builder: (context, state) => const AIRecommendScreen(),
+      ),
+      GoRoute(
+        path: '/local-recommend',
+        name: AppRoutes.localRecommend,
+        builder: (context, state) => const LocalRecommendScreen(),
       ),
 
       // ============================================
@@ -126,6 +132,7 @@ class AppRoutes {
   static const String planCalendar = 'plan-calendar';
   static const String accommodation = 'accommodation';
   static const String aiRecommend = 'ai-recommend';
+  static const String localRecommend = 'local-recommend';
 
   // Detail routes (추후 추가)
   static const String placeDetail = 'place-detail';
