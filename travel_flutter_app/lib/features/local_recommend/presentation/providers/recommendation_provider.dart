@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/utils/debouncer.dart';
 import '../../../../shared/models/place.dart';
 import '../../data/providers/place_analysis_provider.dart';
 import '../../data/services/place_analysis_service.dart';
@@ -83,6 +84,7 @@ class RecommendationState {
 class RecommendationNotifier extends StateNotifier<RecommendationState> {
   final PlaceAnalysisService _placeAnalysisService;
   final LocationService _locationService;
+  final Debouncer _filterDebouncer = Debouncer(duration: const Duration(milliseconds: 800));
 
   RecommendationNotifier({
     required PlaceAnalysisService placeAnalysisService,
@@ -90,6 +92,12 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
   })  : _placeAnalysisService = placeAnalysisService,
         _locationService = locationService ?? LocationService(),
         super(const RecommendationState());
+
+  @override
+  void dispose() {
+    _filterDebouncer.dispose();
+    super.dispose();
+  }
 
   // ============================================
   // 초기 추천 로드
@@ -221,7 +229,7 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
   // 필터 및 정렬
   // ============================================
 
-  /// 필터 업데이트
+  /// 필터 업데이트 (Debouncing 적용)
   Future<void> updateFilter({
     Set<String>? selectedCategories,
     double? maxDistance,
@@ -229,8 +237,9 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
     int? minReviewCount,
     TimeFilter? timeFilter,
   }) async {
-    Logger.info('필터 업데이트', 'RecommendationNotifier');
+    Logger.info('필터 업데이트 (디바운싱)', 'RecommendationNotifier');
 
+    // 먼저 상태 업데이트 (UI 즉시 반영)
     state = state.copyWith(
       selectedCategories: selectedCategories ?? state.selectedCategories,
       maxDistance: maxDistance ?? state.maxDistance,
@@ -239,9 +248,11 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
       timeFilter: timeFilter ?? state.timeFilter,
     );
 
-    // 필터 적용 후 재로드
-    // TODO: 시간대 필터는 클라이언트 사이드에서 처리하거나, 향후 서버 API에 통합
-    await loadInitialRecommendations();
+    // 디바운싱을 적용하여 API 호출 최적화
+    // 사용자가 연속으로 필터를 변경하면 마지막 변경만 API 호출
+    _filterDebouncer.run(() {
+      loadInitialRecommendations();
+    });
   }
 
   /// 정렬 업데이트

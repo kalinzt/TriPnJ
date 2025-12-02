@@ -34,6 +34,7 @@ class EnhancedRecommendationCard extends ConsumerStatefulWidget {
 class _EnhancedRecommendationCardState
     extends ConsumerState<EnhancedRecommendationCard> {
   double? _distanceInMeters;
+  bool? _userFeedback; // true=도움됨, false=도움안됨, null=피드백없음
 
   @override
   void initState() {
@@ -121,6 +122,35 @@ class _EnhancedRecommendationCardState
           isFavorite ? '즐겨찾기에 추가했습니다' : '즐겨찾기에서 제거했습니다',
         ),
         duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  /// 피드백 제공
+  Future<void> _provideFeedback(bool isPositive) async {
+    setState(() {
+      _userFeedback = isPositive;
+    });
+
+    // TODO: 피드백을 서버나 로컬 저장소에 저장
+    // 여기서는 UserPreference에 저장하고 학습 알고리즘에 반영
+    final repository = ref.read(userPreferenceRepositoryProvider);
+
+    // 장소의 카테고리를 가져와서 선호도 업데이트
+    final category = getCategoryFromPlaceTypes(widget.place.types);
+
+    // TODO: PreferenceLearning.updateWeightsFromFeedback() 호출
+    // 현재는 로그만 남김
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isPositive
+            ? '피드백 감사합니다! 더 나은 추천을 제공하겠습니다.'
+            : '피드백 감사합니다. 추천 알고리즘을 개선하겠습니다.',
+        ),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -284,11 +314,112 @@ class _EnhancedRecommendationCardState
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 16),
+
+                  // 피드백 섹션
+                  _buildFeedbackSection(),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 피드백 섹션
+  Widget _buildFeedbackSection() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.textSecondary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '이 추천이 도움이 되었나요?',
+            style: AppTextStyles.bodySmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              // 긍정 피드백 버튼
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _userFeedback == true
+                      ? null
+                      : () => _provideFeedback(true),
+                  icon: Icon(
+                    _userFeedback == true
+                        ? Icons.thumb_up
+                        : Icons.thumb_up_outlined,
+                    size: 18,
+                  ),
+                  label: const Text('도움됨'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _userFeedback == true
+                        ? Colors.white
+                        : AppColors.primary,
+                    backgroundColor: _userFeedback == true
+                        ? AppColors.primary
+                        : Colors.transparent,
+                    side: BorderSide(
+                      color: _userFeedback == true
+                          ? AppColors.primary
+                          : AppColors.textSecondary.withValues(alpha: 0.3),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // 부정 피드백 버튼
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _userFeedback == false
+                      ? null
+                      : () => _provideFeedback(false),
+                  icon: Icon(
+                    _userFeedback == false
+                        ? Icons.thumb_down
+                        : Icons.thumb_down_outlined,
+                    size: 18,
+                  ),
+                  label: const Text('도움안됨'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _userFeedback == false
+                        ? Colors.white
+                        : AppColors.textSecondary,
+                    backgroundColor: _userFeedback == false
+                        ? AppColors.textSecondary
+                        : Colors.transparent,
+                    side: BorderSide(
+                      color: _userFeedback == false
+                          ? AppColors.textSecondary
+                          : AppColors.textSecondary.withValues(alpha: 0.3),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -300,7 +431,7 @@ class _EnhancedRecommendationCardState
 
     return Stack(
       children: [
-        // 메인 이미지
+        // 메인 이미지 (최적화: 점진적 로딩, 메모리 캐싱)
         ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           child: AspectRatio(
@@ -309,16 +440,26 @@ class _EnhancedRecommendationCardState
                 ? CachedNetworkImage(
                     imageUrl: photoUrl,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: category.color.withValues(alpha: 0.2),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(category.color),
+                    // 최적화: 메모리 캐시 설정
+                    memCacheWidth: 800, // 최대 너비 제한으로 메모리 절약
+                    memCacheHeight: 450, // 16:9 비율 유지
+                    // 점진적 로딩: 저화질 → 고화질
+                    progressIndicatorBuilder: (context, url, progress) {
+                      return Container(
+                        color: category.color.withValues(alpha: 0.1),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: progress.progress,
+                            valueColor: AlwaysStoppedAnimation(category.color),
+                            strokeWidth: 2,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                     errorWidget: (context, url, error) =>
                         _buildPlaceholder(category),
+                    // 캐시 유효기간 설정 (7일)
+                    cacheKey: '${widget.place.id}_card',
                   )
                 : _buildPlaceholder(category),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../domain/models/sort_option.dart';
@@ -25,18 +26,39 @@ class LocalRecommendScreen extends ConsumerStatefulWidget {
 class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
     with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
+  final Connectivity _connectivity = Connectivity();
   late TabController _tabController;
   bool _showFavoritesOnly = false;
+  bool _isOnline = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
+    // 연결 상태 모니터링
+    _checkConnectivity();
+    _connectivity.onConnectivityChanged.listen((result) {
+      if (mounted) {
+        setState(() {
+          _isOnline = result != ConnectivityResult.none;
+        });
+      }
+    });
+
     // 초기 추천 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(recommendationProvider.notifier).loadInitialRecommendations();
     });
+  }
+
+  Future<void> _checkConnectivity() async {
+    final result = await _connectivity.checkConnectivity();
+    if (mounted) {
+      setState(() {
+        _isOnline = result != ConnectivityResult.none;
+      });
+    }
   }
 
   @override
@@ -191,13 +213,42 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
           ),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          // 탭 1: 리스트 뷰
-          _buildListView(state),
-          // 탭 2: 지도 뷰
-          _buildMapView(state),
+          // 오프라인 배너
+          if (!_isOnline)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              color: Colors.orange.shade100,
+              child: Row(
+                children: [
+                  Icon(Icons.cloud_off, size: 16, color: Colors.orange.shade900),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '오프라인 모드 - 캐시된 데이터를 표시합니다',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange.shade900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          // 탭 뷰
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // 탭 1: 리스트 뷰
+                _buildListView(state),
+                // 탭 2: 지도 뷰
+                _buildMapView(state),
+              ],
+            ),
+          ),
         ],
       ),
     );
