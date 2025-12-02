@@ -133,14 +133,8 @@ class _EnhancedRecommendationCardState
     });
 
     // TODO: 피드백을 서버나 로컬 저장소에 저장
-    // 여기서는 UserPreference에 저장하고 학습 알고리즘에 반영
-    final repository = ref.read(userPreferenceRepositoryProvider);
-
-    // 장소의 카테고리를 가져와서 선호도 업데이트
-    final category = getCategoryFromPlaceTypes(widget.place.types);
-
     // TODO: PreferenceLearning.updateWeightsFromFeedback() 호출
-    // 현재는 로그만 남김
+    // 현재는 사용자에게 피드백만 표시
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
