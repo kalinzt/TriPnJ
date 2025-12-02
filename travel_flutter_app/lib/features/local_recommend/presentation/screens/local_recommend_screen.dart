@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../domain/models/sort_option.dart';
+import '../../domain/models/time_filter.dart';
 import '../providers/recommendation_provider.dart';
+import '../../data/providers/user_preference_provider.dart';
 import '../widgets/recommendation_filter_sheet.dart';
 import '../widgets/recommendation_sort_menu.dart';
 import '../widgets/swipeable_recommendation_card.dart';
@@ -24,6 +26,7 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
     with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
+  bool _showFavoritesOnly = false;
 
   @override
   void initState() {
@@ -78,6 +81,7 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
           maxDistance: state.maxDistance,
           minRating: state.minRating,
           minReviewCount: state.minReviewCount,
+          timeFilter: state.timeFilter,
         ),
       ),
     );
@@ -89,6 +93,7 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
             maxDistance: result['maxDistance'] as double,
             minRating: result['minRating'] as double,
             minReviewCount: result['minReviewCount'] as int,
+            timeFilter: result['timeFilter'] as TimeFilter,
           );
     }
   }
@@ -96,6 +101,13 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
   /// 정렬 변경
   void _handleSortChanged(SortOption option) {
     ref.read(recommendationProvider.notifier).updateSort(option);
+  }
+
+  /// 즐겨찾기 필터 토글
+  void _toggleFavoritesFilter() {
+    setState(() {
+      _showFavoritesOnly = !_showFavoritesOnly;
+    });
   }
 
   @override
@@ -125,6 +137,16 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
           ],
         ),
         actions: [
+          // 즐겨찾기 필터 버튼
+          IconButton(
+            icon: Icon(
+              _showFavoritesOnly ? Icons.favorite : Icons.favorite_border,
+            ),
+            color: _showFavoritesOnly ? AppColors.primary : null,
+            tooltip: '즐겨찾기만 보기',
+            onPressed: _toggleFavoritesFilter,
+          ),
+
           // 필터 버튼
           Stack(
             children: [
@@ -183,6 +205,14 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   /// 리스트 뷰
   Widget _buildListView(RecommendationState state) {
+    // 즐겨찾기 필터 적용
+    final userPreference = ref.watch(userPreferenceProvider);
+    final filteredRecommendations = _showFavoritesOnly
+        ? state.recommendations
+            .where((place) => userPreference.isFavorite(place.id))
+            .toList()
+        : state.recommendations;
+
     // 에러 상태
     if (state.errorMessage != null && state.recommendations.isEmpty) {
       return _buildErrorView(state.errorMessage!);
@@ -194,8 +224,10 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
     }
 
     // 추천 없음
-    if (state.recommendations.isEmpty) {
-      return _buildEmptyView();
+    if (filteredRecommendations.isEmpty) {
+      return _showFavoritesOnly
+          ? _buildEmptyFavoritesView()
+          : _buildEmptyView();
     }
 
     // 추천 목록
@@ -204,15 +236,17 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
-        itemCount: state.recommendations.length + 1, // +1 for "더 보기" 버튼
+        itemCount: filteredRecommendations.length + 1, // +1 for "더 보기" 버튼
         itemBuilder: (context, index) {
-          // 마지막 아이템: "더 보기" 버튼
-          if (index == state.recommendations.length) {
-            return _buildLoadMoreButton(state);
+          // 마지막 아이템: "더 보기" 버튼 (즐겨찾기 모드가 아닐 때만)
+          if (index == filteredRecommendations.length) {
+            return _showFavoritesOnly
+                ? const SizedBox.shrink()
+                : _buildLoadMoreButton(state);
           }
 
           // 추천 카드
-          final place = state.recommendations[index];
+          final place = filteredRecommendations[index];
           return SwipeableRecommendationCard(
             place: place,
             score: null, // TODO: 점수 추가
@@ -228,6 +262,14 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   /// 지도 뷰
   Widget _buildMapView(RecommendationState state) {
+    // 즐겨찾기 필터 적용
+    final userPreference = ref.watch(userPreferenceProvider);
+    final filteredRecommendations = _showFavoritesOnly
+        ? state.recommendations
+            .where((place) => userPreference.isFavorite(place.id))
+            .toList()
+        : state.recommendations;
+
     // 에러 상태
     if (state.errorMessage != null && state.recommendations.isEmpty) {
       return _buildErrorView(state.errorMessage!);
@@ -239,13 +281,15 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
     }
 
     // 추천 없음
-    if (state.recommendations.isEmpty) {
-      return _buildEmptyView();
+    if (filteredRecommendations.isEmpty) {
+      return _showFavoritesOnly
+          ? _buildEmptyFavoritesView()
+          : _buildEmptyView();
     }
 
     // 지도 표시
     return RecommendationMapView(
-      places: state.recommendations,
+      places: filteredRecommendations,
       scores: null, // TODO: 점수 매핑 추가
     );
   }
@@ -350,6 +394,40 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 빈 즐겨찾기 뷰
+  Widget _buildEmptyFavoritesView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border,
+              size: 80,
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              '즐겨찾기한 장소가 없습니다',
+              style: AppTextStyles.titleMedium.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '추천 장소의 하트 아이콘을 눌러\n즐겨찾기에 추가해보세요',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

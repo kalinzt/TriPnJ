@@ -5,6 +5,7 @@ import '../../../../shared/models/place.dart';
 import '../../data/providers/place_analysis_provider.dart';
 import '../../data/services/place_analysis_service.dart';
 import '../../domain/models/sort_option.dart';
+import '../../domain/models/time_filter.dart';
 
 /// 추천 상태
 class RecommendationState {
@@ -19,6 +20,7 @@ class RecommendationState {
   final double maxDistance; // 킬로미터
   final double minRating;
   final int minReviewCount;
+  final TimeFilter timeFilter;
 
   // 정렬 상태
   final SortOption currentSortOption;
@@ -33,6 +35,7 @@ class RecommendationState {
     this.maxDistance = 10.0,
     this.minRating = 0.0,
     this.minReviewCount = 0,
+    this.timeFilter = TimeFilter.all,
     this.currentSortOption = SortOption.recommendation,
   });
 
@@ -46,6 +49,7 @@ class RecommendationState {
     double? maxDistance,
     double? minRating,
     int? minReviewCount,
+    TimeFilter? timeFilter,
     SortOption? currentSortOption,
   }) {
     return RecommendationState(
@@ -58,6 +62,7 @@ class RecommendationState {
       maxDistance: maxDistance ?? this.maxDistance,
       minRating: minRating ?? this.minRating,
       minReviewCount: minReviewCount ?? this.minReviewCount,
+      timeFilter: timeFilter ?? this.timeFilter,
       currentSortOption: currentSortOption ?? this.currentSortOption,
     );
   }
@@ -69,6 +74,7 @@ class RecommendationState {
     if (maxDistance < 10.0) count++;
     if (minRating > 0.0) count++;
     if (minReviewCount > 0) count++;
+    if (timeFilter != TimeFilter.all) count++;
     return count;
   }
 }
@@ -221,6 +227,7 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
     double? maxDistance,
     double? minRating,
     int? minReviewCount,
+    TimeFilter? timeFilter,
   }) async {
     Logger.info('필터 업데이트', 'RecommendationNotifier');
 
@@ -229,9 +236,11 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
       maxDistance: maxDistance ?? state.maxDistance,
       minRating: minRating ?? state.minRating,
       minReviewCount: minReviewCount ?? state.minReviewCount,
+      timeFilter: timeFilter ?? state.timeFilter,
     );
 
     // 필터 적용 후 재로드
+    // TODO: 시간대 필터는 클라이언트 사이드에서 처리하거나, 향후 서버 API에 통합
     await loadInitialRecommendations();
   }
 
@@ -320,6 +329,7 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
       maxDistance: 10.0,
       minRating: 0.0,
       minReviewCount: 0,
+      timeFilter: TimeFilter.all,
     );
 
     // 필터 초기화 후 재로드

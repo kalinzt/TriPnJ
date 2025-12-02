@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/models/place_category.dart';
+import '../../domain/models/time_filter.dart';
 
 /// 추천 필터 BottomSheet
 class RecommendationFilterSheet extends StatefulWidget {
@@ -9,6 +10,7 @@ class RecommendationFilterSheet extends StatefulWidget {
   final double maxDistance;
   final double minRating;
   final int minReviewCount;
+  final TimeFilter timeFilter;
 
   const RecommendationFilterSheet({
     super.key,
@@ -16,6 +18,7 @@ class RecommendationFilterSheet extends StatefulWidget {
     required this.maxDistance,
     required this.minRating,
     required this.minReviewCount,
+    this.timeFilter = TimeFilter.all,
   });
 
   @override
@@ -28,6 +31,7 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
   late double _maxDistance;
   late double _minRating;
   late int _minReviewCount;
+  late TimeFilter _timeFilter;
 
   @override
   void initState() {
@@ -36,6 +40,7 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
     _maxDistance = widget.maxDistance;
     _minRating = widget.minRating;
     _minReviewCount = widget.minReviewCount;
+    _timeFilter = widget.timeFilter;
   }
 
   /// 초기화
@@ -45,6 +50,7 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
       _maxDistance = 10.0;
       _minRating = 0.0;
       _minReviewCount = 0;
+      _timeFilter = TimeFilter.all;
     });
   }
 
@@ -55,6 +61,7 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
       'maxDistance': _maxDistance,
       'minRating': _minRating,
       'minReviewCount': _minReviewCount,
+      'timeFilter': _timeFilter,
     });
   }
 
@@ -125,6 +132,11 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
 
                   // 리뷰 수 필터
                   _buildReviewCountFilter(),
+
+                  const SizedBox(height: 24),
+
+                  // 시간대 필터
+                  _buildTimeFilter(),
 
                   const SizedBox(height: 16),
                 ],
@@ -429,6 +441,47 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
             ),
           ],
         ),
+      ],
+    );
+  }
+
+  /// 시간대 필터
+  Widget _buildTimeFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '시간대',
+          style: AppTextStyles.titleSmall.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...TimeFilter.values.map((filter) {
+          return RadioListTile<TimeFilter>(
+            title: Text(
+              filter.displayName,
+              style: AppTextStyles.bodyMedium,
+            ),
+            subtitle: Text(
+              filter.description,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            value: filter,
+            groupValue: _timeFilter,
+            activeColor: AppColors.primary,
+            contentPadding: EdgeInsets.zero,
+            onChanged: (TimeFilter? value) {
+              if (value != null) {
+                setState(() {
+                  _timeFilter = value;
+                });
+              }
+            },
+          );
+        }).toList(),
       ],
     );
   }

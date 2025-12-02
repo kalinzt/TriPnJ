@@ -106,6 +106,25 @@ class _EnhancedRecommendationCardState
     }
   }
 
+  /// 즐겨찾기 토글
+  Future<void> _toggleFavorite() async {
+    final repository = ref.read(userPreferenceRepositoryProvider);
+    await repository.toggleFavorite(widget.place.id);
+
+    final userPreference = ref.read(userPreferenceProvider);
+    final isFavorite = userPreference.isFavorite(widget.place.id);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isFavorite ? '즐겨찾기에 추가했습니다' : '즐겨찾기에서 제거했습니다',
+        ),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
   /// 사진 URL 가져오기
   String _getPhotoUrl() {
     if (widget.place.photos.isEmpty) return '';
@@ -276,6 +295,9 @@ class _EnhancedRecommendationCardState
 
   /// 이미지 섹션 (16:9 비율)
   Widget _buildImageSection(String photoUrl, PlaceCategory category) {
+    final userPreference = ref.watch(userPreferenceProvider);
+    final isFavorite = userPreference.isFavorite(widget.place.id);
+
     return Stack(
       children: [
         // 메인 이미지
@@ -310,9 +332,40 @@ class _EnhancedRecommendationCardState
             child: _buildScoreBadge(),
           ),
 
-        // 우측 상단: 카테고리 아이콘
+        // 우측 상단: 즐겨찾기 하트 아이콘
         Positioned(
           top: 12,
+          right: 12,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _toggleFavorite,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  size: 20,
+                  color: isFavorite ? Colors.red : AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // 우측 상단 아래: 카테고리 아이콘
+        Positioned(
+          top: 56,
           right: 12,
           child: Container(
             padding: const EdgeInsets.all(8),
