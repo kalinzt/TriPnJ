@@ -5,7 +5,7 @@ import 'home_screen.dart';
 import '../../../explore/presentation/screens/explore_screen.dart';
 import '../../../plan/presentation/screens/plan_screen.dart';
 import '../../../accommodation/presentation/screens/accommodation_screen.dart';
-import '../../../ai_recommend/presentation/screens/ai_recommend_screen.dart';
+import '../../../local_recommend/presentation/screens/local_recommend_screen.dart';
 
 /// 메인 스크린 - 하단 네비게이션 바를 포함한 메인 컨테이너
 class MainScreen extends ConsumerStatefulWidget {
@@ -24,7 +24,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     ExploreScreen(),
     PlanScreen(),
     AccommodationScreen(),
-    AIRecommendScreen(),
+    LocalRecommendScreen(),
   ];
 
   // 네비게이션 바 아이템 정의
@@ -50,9 +50,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       label: '숙박',
     ),
     NavigationItem(
-      icon: Icons.psychology_outlined,
-      activeIcon: Icons.psychology,
-      label: 'AI추천',
+      icon: Icons.recommend_outlined,
+      activeIcon: Icons.recommend,
+      label: '맞춤 추천',
     ),
   ];
 
@@ -72,12 +72,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           boxShadow: [
             BoxShadow(
               color: AppColors.shadow,
               blurRadius: 8,
-              offset: const Offset(0, -2),
+              offset: Offset(0, -2),
             ),
           ],
         ),
