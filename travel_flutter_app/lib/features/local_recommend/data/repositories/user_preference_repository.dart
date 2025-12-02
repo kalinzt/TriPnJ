@@ -324,6 +324,107 @@ class UserPreferenceRepository {
   }
 
   // ============================================
+  // 즐겨찾기 관리
+  // ============================================
+
+  /// 즐겨찾기 목록 반환
+  List<String> getFavoritePlaces() {
+    try {
+      final preference = getUserPreference();
+      return preference.favoritePlaceIds;
+    } catch (e, stackTrace) {
+      Logger.error('즐겨찾기 조회 실패', e, stackTrace, 'UserPreferenceRepository');
+      return [];
+    }
+  }
+
+  /// 특정 장소를 즐겨찾기했는지 확인
+  bool isFavorite(String placeId) {
+    return getFavoritePlaces().contains(placeId);
+  }
+
+  /// 즐겨찾기 토글
+  ///
+  /// 이미 즐겨찾기에 있으면 제거, 없으면 추가
+  Future<UserPreference> toggleFavorite(String placeId) async {
+    try {
+      final preference = getUserPreference();
+      final updatedFavorites = List<String>.from(preference.favoritePlaceIds);
+
+      if (updatedFavorites.contains(placeId)) {
+        // 제거
+        updatedFavorites.remove(placeId);
+        Logger.info('즐겨찾기에서 제거: $placeId', 'UserPreferenceRepository');
+      } else {
+        // 추가
+        updatedFavorites.add(placeId);
+        Logger.info('즐겨찾기에 추가: $placeId', 'UserPreferenceRepository');
+      }
+
+      final updatedPreference = preference.copyWith(
+        favoritePlaceIds: updatedFavorites,
+        lastUpdated: DateTime.now(),
+      );
+
+      _saveUserPreference(updatedPreference);
+
+      return updatedPreference;
+    } catch (e, stackTrace) {
+      Logger.error('즐겨찾기 토글 실패', e, stackTrace, 'UserPreferenceRepository');
+      return getUserPreference();
+    }
+  }
+
+  /// 즐겨찾기 추가
+  Future<UserPreference> addFavorite(String placeId) async {
+    try {
+      Logger.info('즐겨찾기에 추가: $placeId', 'UserPreferenceRepository');
+
+      final preference = getUserPreference();
+      final updatedFavorites = List<String>.from(preference.favoritePlaceIds);
+
+      if (!updatedFavorites.contains(placeId)) {
+        updatedFavorites.add(placeId);
+      }
+
+      final updatedPreference = preference.copyWith(
+        favoritePlaceIds: updatedFavorites,
+        lastUpdated: DateTime.now(),
+      );
+
+      _saveUserPreference(updatedPreference);
+
+      return updatedPreference;
+    } catch (e, stackTrace) {
+      Logger.error('즐겨찾기 추가 실패', e, stackTrace, 'UserPreferenceRepository');
+      return getUserPreference();
+    }
+  }
+
+  /// 즐겨찾기 제거
+  Future<UserPreference> removeFavorite(String placeId) async {
+    try {
+      Logger.info('즐겨찾기에서 제거: $placeId', 'UserPreferenceRepository');
+
+      final preference = getUserPreference();
+      final updatedFavorites = List<String>.from(preference.favoritePlaceIds);
+      updatedFavorites.remove(placeId);
+
+      final updatedPreference = preference.copyWith(
+        favoritePlaceIds: updatedFavorites,
+        lastUpdated: DateTime.now(),
+      );
+
+      _saveUserPreference(updatedPreference);
+
+      return updatedPreference;
+    } catch (e, stackTrace) {
+      Logger.error('즐겨찾기 제거 실패', e, stackTrace, 'UserPreferenceRepository');
+      return getUserPreference();
+    }
+  }
+
+  // ============================================
   // DELETE - GDPR 준수
   // ============================================
 

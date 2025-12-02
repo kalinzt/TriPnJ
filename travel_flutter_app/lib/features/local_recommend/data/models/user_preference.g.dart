@@ -20,6 +20,10 @@ _$UserPreferenceImpl _$$UserPreferenceImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      favoritePlaceIds: (json['favoritePlaceIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       categoryVisitCount:
           (json['categoryVisitCount'] as Map<String, dynamic>?)?.map(
                 (k, e) => MapEntry(k, (e as num).toInt()),
@@ -38,6 +42,7 @@ Map<String, dynamic> _$$UserPreferenceImplToJson(
       'categoryWeights': instance.categoryWeights,
       'visitedPlaceIds': instance.visitedPlaceIds,
       'rejectedPlaceIds': instance.rejectedPlaceIds,
+      'favoritePlaceIds': instance.favoritePlaceIds,
       'categoryVisitCount': instance.categoryVisitCount,
       'lastUpdated': instance.lastUpdated.toIso8601String(),
       'averageRatingPreference': instance.averageRatingPreference,

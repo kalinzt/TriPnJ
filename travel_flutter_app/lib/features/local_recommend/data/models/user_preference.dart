@@ -25,6 +25,11 @@ class UserPreference with _$UserPreference {
     /// 추천에서 제외할 장소
     @Default([]) List<String> rejectedPlaceIds,
 
+    /// 즐겨찾기 장소 ID 목록
+    ///
+    /// 사용자가 즐겨찾기한 장소
+    @Default([]) List<String> favoritePlaceIds,
+
     /// 카테고리별 방문 횟수
     ///
     /// 예: {'restaurant': 15, 'cafe': 8, 'attraction': 12}
@@ -43,6 +48,8 @@ class UserPreference with _$UserPreference {
     /// 사용자가 주로 여행하는 거리
     @Default(5.0) double averageTravelRadiusKm,
   }) = _UserPreference;
+
+  const UserPreference._();
 
   factory UserPreference.fromJson(Map<String, dynamic> json) =>
       _$UserPreferenceFromJson(json);
@@ -63,25 +70,6 @@ class UserPreference with _$UserPreference {
       lastUpdated: DateTime.now(),
     );
   }
-}
-
-/// UserPreference 확장 메서드
-extension UserPreferenceX on UserPreference {
-  /// PlaceCategory를 키로 사용하는 가중치 맵 반환
-  Map<PlaceCategory, double> getCategoryWeightsAsEnum() {
-    final result = <PlaceCategory, double>{};
-    for (final entry in categoryWeights.entries) {
-      try {
-        final category = PlaceCategory.values.firstWhere(
-          (cat) => cat.name == entry.key,
-        );
-        result[category] = entry.value;
-      } catch (_) {
-        // 유효하지 않은 카테고리는 무시
-      }
-    }
-    return result;
-  }
 
   /// 특정 장소를 방문했는지 확인
   bool hasVisited(String placeId) {
@@ -91,6 +79,11 @@ extension UserPreferenceX on UserPreference {
   /// 특정 장소를 거절했는지 확인
   bool hasRejected(String placeId) {
     return rejectedPlaceIds.contains(placeId);
+  }
+
+  /// 특정 장소를 즐겨찾기했는지 확인
+  bool isFavorite(String placeId) {
+    return favoritePlaceIds.contains(placeId);
   }
 
   /// 특정 카테고리의 방문 횟수 반환
@@ -111,5 +104,21 @@ extension UserPreferenceX on UserPreference {
   /// Cold Start 여부 확인 (방문 이력이 부족한지)
   bool get isColdStart {
     return totalVisitCount < 3;
+  }
+
+  /// PlaceCategory를 키로 사용하는 가중치 맵 반환
+  Map<PlaceCategory, double> getCategoryWeightsAsEnum() {
+    final result = <PlaceCategory, double>{};
+    for (final entry in categoryWeights.entries) {
+      try {
+        final category = PlaceCategory.values.firstWhere(
+          (cat) => cat.name == entry.key,
+        );
+        result[category] = entry.value;
+      } catch (_) {
+        // 유효하지 않은 카테고리는 무시
+      }
+    }
+    return result;
   }
 }

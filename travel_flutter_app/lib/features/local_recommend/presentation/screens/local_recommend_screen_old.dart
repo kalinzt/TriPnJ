@@ -8,11 +8,10 @@ import '../providers/recommendation_provider.dart';
 import '../widgets/recommendation_filter_sheet.dart';
 import '../widgets/recommendation_sort_menu.dart';
 import '../widgets/swipeable_recommendation_card.dart';
-import '../widgets/recommendation_map_view.dart';
 
-/// 로컬 추천 화면 (TabBar 버전)
+/// 로컬 추천 화면
 ///
-/// 사용자 맞춤 장소 추천을 리스트/지도 뷰로 표시합니다.
+/// 사용자 맞춤 장소 추천을 표시합니다.
 class LocalRecommendScreen extends ConsumerStatefulWidget {
   const LocalRecommendScreen({super.key});
 
@@ -20,16 +19,12 @@ class LocalRecommendScreen extends ConsumerStatefulWidget {
   ConsumerState<LocalRecommendScreen> createState() => _LocalRecommendScreenState();
 }
 
-class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
-    with SingleTickerProviderStateMixin {
+class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen> {
   final ScrollController _scrollController = ScrollController();
-  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-
     // 초기 추천 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(recommendationProvider.notifier).loadInitialRecommendations();
@@ -39,7 +34,6 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
   @override
   void dispose() {
     _scrollController.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -108,22 +102,6 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
         title: const Text('맞춤 추천'),
         backgroundColor: Colors.white,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.list),
-              text: '리스트',
-            ),
-            Tab(
-              icon: Icon(Icons.map),
-              text: '지도',
-            ),
-          ],
-        ),
         actions: [
           // 필터 버튼
           Stack(
@@ -169,20 +147,12 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
           ),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // 탭 1: 리스트 뷰
-          _buildListView(state),
-          // 탭 2: 지도 뷰
-          _buildMapView(state),
-        ],
-      ),
+      body: _buildBody(state),
     );
   }
 
-  /// 리스트 뷰
-  Widget _buildListView(RecommendationState state) {
+  /// Body 위젯
+  Widget _buildBody(RecommendationState state) {
     // 에러 상태
     if (state.errorMessage != null && state.recommendations.isEmpty) {
       return _buildErrorView(state.errorMessage!);
@@ -215,38 +185,15 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
           final place = state.recommendations[index];
           return SwipeableRecommendationCard(
             place: place,
-            score: null, // TODO: 점수 추가
+            score: null, // TODO: 점수 추가 (Phase 2)
             onDismissed: () {
               // 카드가 제거된 후 목록에서도 제거
+              // Provider의 상태는 이미 업데이트되어 있으므로 UI 새로고침만 필요
               setState(() {});
             },
           );
         },
       ),
-    );
-  }
-
-  /// 지도 뷰
-  Widget _buildMapView(RecommendationState state) {
-    // 에러 상태
-    if (state.errorMessage != null && state.recommendations.isEmpty) {
-      return _buildErrorView(state.errorMessage!);
-    }
-
-    // 로딩 중 (초기)
-    if (state.isLoading && state.recommendations.isEmpty) {
-      return _buildLoadingView();
-    }
-
-    // 추천 없음
-    if (state.recommendations.isEmpty) {
-      return _buildEmptyView();
-    }
-
-    // 지도 표시
-    return RecommendationMapView(
-      places: state.recommendations,
-      scores: null, // TODO: 점수 매핑 추가
     );
   }
 

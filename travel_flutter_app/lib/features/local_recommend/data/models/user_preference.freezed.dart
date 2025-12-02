@@ -35,6 +35,11 @@ mixin _$UserPreference {
   /// 추천에서 제외할 장소
   List<String> get rejectedPlaceIds => throw _privateConstructorUsedError;
 
+  /// 즐겨찾기 장소 ID 목록
+  ///
+  /// 사용자가 즐겨찾기한 장소
+  List<String> get favoritePlaceIds => throw _privateConstructorUsedError;
+
   /// 카테고리별 방문 횟수
   ///
   /// 예: {'restaurant': 15, 'cafe': 8, 'attraction': 12}
@@ -73,6 +78,7 @@ abstract class $UserPreferenceCopyWith<$Res> {
       {Map<String, double> categoryWeights,
       List<String> visitedPlaceIds,
       List<String> rejectedPlaceIds,
+      List<String> favoritePlaceIds,
       Map<String, int> categoryVisitCount,
       DateTime lastUpdated,
       double averageRatingPreference,
@@ -97,6 +103,7 @@ class _$UserPreferenceCopyWithImpl<$Res, $Val extends UserPreference>
     Object? categoryWeights = null,
     Object? visitedPlaceIds = null,
     Object? rejectedPlaceIds = null,
+    Object? favoritePlaceIds = null,
     Object? categoryVisitCount = null,
     Object? lastUpdated = null,
     Object? averageRatingPreference = null,
@@ -114,6 +121,10 @@ class _$UserPreferenceCopyWithImpl<$Res, $Val extends UserPreference>
       rejectedPlaceIds: null == rejectedPlaceIds
           ? _value.rejectedPlaceIds
           : rejectedPlaceIds // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      favoritePlaceIds: null == favoritePlaceIds
+          ? _value.favoritePlaceIds
+          : favoritePlaceIds // ignore: cast_nullable_to_non_nullable
               as List<String>,
       categoryVisitCount: null == categoryVisitCount
           ? _value.categoryVisitCount
@@ -147,6 +158,7 @@ abstract class _$$UserPreferenceImplCopyWith<$Res>
       {Map<String, double> categoryWeights,
       List<String> visitedPlaceIds,
       List<String> rejectedPlaceIds,
+      List<String> favoritePlaceIds,
       Map<String, int> categoryVisitCount,
       DateTime lastUpdated,
       double averageRatingPreference,
@@ -169,6 +181,7 @@ class __$$UserPreferenceImplCopyWithImpl<$Res>
     Object? categoryWeights = null,
     Object? visitedPlaceIds = null,
     Object? rejectedPlaceIds = null,
+    Object? favoritePlaceIds = null,
     Object? categoryVisitCount = null,
     Object? lastUpdated = null,
     Object? averageRatingPreference = null,
@@ -186,6 +199,10 @@ class __$$UserPreferenceImplCopyWithImpl<$Res>
       rejectedPlaceIds: null == rejectedPlaceIds
           ? _value._rejectedPlaceIds
           : rejectedPlaceIds // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      favoritePlaceIds: null == favoritePlaceIds
+          ? _value._favoritePlaceIds
+          : favoritePlaceIds // ignore: cast_nullable_to_non_nullable
               as List<String>,
       categoryVisitCount: null == categoryVisitCount
           ? _value._categoryVisitCount
@@ -209,11 +226,12 @@ class __$$UserPreferenceImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$UserPreferenceImpl implements _UserPreference {
+class _$UserPreferenceImpl extends _UserPreference {
   const _$UserPreferenceImpl(
       {final Map<String, double> categoryWeights = const {},
       final List<String> visitedPlaceIds = const [],
       final List<String> rejectedPlaceIds = const [],
+      final List<String> favoritePlaceIds = const [],
       final Map<String, int> categoryVisitCount = const {},
       required this.lastUpdated,
       this.averageRatingPreference = 4.0,
@@ -221,7 +239,9 @@ class _$UserPreferenceImpl implements _UserPreference {
       : _categoryWeights = categoryWeights,
         _visitedPlaceIds = visitedPlaceIds,
         _rejectedPlaceIds = rejectedPlaceIds,
-        _categoryVisitCount = categoryVisitCount;
+        _favoritePlaceIds = favoritePlaceIds,
+        _categoryVisitCount = categoryVisitCount,
+        super._();
 
   factory _$UserPreferenceImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserPreferenceImplFromJson(json);
@@ -275,6 +295,23 @@ class _$UserPreferenceImpl implements _UserPreference {
     return EqualUnmodifiableListView(_rejectedPlaceIds);
   }
 
+  /// 즐겨찾기 장소 ID 목록
+  ///
+  /// 사용자가 즐겨찾기한 장소
+  final List<String> _favoritePlaceIds;
+
+  /// 즐겨찾기 장소 ID 목록
+  ///
+  /// 사용자가 즐겨찾기한 장소
+  @override
+  @JsonKey()
+  List<String> get favoritePlaceIds {
+    if (_favoritePlaceIds is EqualUnmodifiableListView)
+      return _favoritePlaceIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_favoritePlaceIds);
+  }
+
   /// 카테고리별 방문 횟수
   ///
   /// 예: {'restaurant': 15, 'cafe': 8, 'attraction': 12}
@@ -312,7 +349,7 @@ class _$UserPreferenceImpl implements _UserPreference {
 
   @override
   String toString() {
-    return 'UserPreference(categoryWeights: $categoryWeights, visitedPlaceIds: $visitedPlaceIds, rejectedPlaceIds: $rejectedPlaceIds, categoryVisitCount: $categoryVisitCount, lastUpdated: $lastUpdated, averageRatingPreference: $averageRatingPreference, averageTravelRadiusKm: $averageTravelRadiusKm)';
+    return 'UserPreference(categoryWeights: $categoryWeights, visitedPlaceIds: $visitedPlaceIds, rejectedPlaceIds: $rejectedPlaceIds, favoritePlaceIds: $favoritePlaceIds, categoryVisitCount: $categoryVisitCount, lastUpdated: $lastUpdated, averageRatingPreference: $averageRatingPreference, averageTravelRadiusKm: $averageTravelRadiusKm)';
   }
 
   @override
@@ -326,6 +363,8 @@ class _$UserPreferenceImpl implements _UserPreference {
                 .equals(other._visitedPlaceIds, _visitedPlaceIds) &&
             const DeepCollectionEquality()
                 .equals(other._rejectedPlaceIds, _rejectedPlaceIds) &&
+            const DeepCollectionEquality()
+                .equals(other._favoritePlaceIds, _favoritePlaceIds) &&
             const DeepCollectionEquality()
                 .equals(other._categoryVisitCount, _categoryVisitCount) &&
             (identical(other.lastUpdated, lastUpdated) ||
@@ -344,6 +383,7 @@ class _$UserPreferenceImpl implements _UserPreference {
       const DeepCollectionEquality().hash(_categoryWeights),
       const DeepCollectionEquality().hash(_visitedPlaceIds),
       const DeepCollectionEquality().hash(_rejectedPlaceIds),
+      const DeepCollectionEquality().hash(_favoritePlaceIds),
       const DeepCollectionEquality().hash(_categoryVisitCount),
       lastUpdated,
       averageRatingPreference,
@@ -366,15 +406,17 @@ class _$UserPreferenceImpl implements _UserPreference {
   }
 }
 
-abstract class _UserPreference implements UserPreference {
+abstract class _UserPreference extends UserPreference {
   const factory _UserPreference(
       {final Map<String, double> categoryWeights,
       final List<String> visitedPlaceIds,
       final List<String> rejectedPlaceIds,
+      final List<String> favoritePlaceIds,
       final Map<String, int> categoryVisitCount,
       required final DateTime lastUpdated,
       final double averageRatingPreference,
       final double averageTravelRadiusKm}) = _$UserPreferenceImpl;
+  const _UserPreference._() : super._();
 
   factory _UserPreference.fromJson(Map<String, dynamic> json) =
       _$UserPreferenceImpl.fromJson;
@@ -396,6 +438,12 @@ abstract class _UserPreference implements UserPreference {
   /// 추천에서 제외할 장소
   @override
   List<String> get rejectedPlaceIds;
+
+  /// 즐겨찾기 장소 ID 목록
+  ///
+  /// 사용자가 즐겨찾기한 장소
+  @override
+  List<String> get favoritePlaceIds;
 
   /// 카테고리별 방문 횟수
   ///
