@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../providers/recommendation_provider.dart';
-import '../widgets/recommendation_card.dart';
+import '../widgets/swipeable_recommendation_card.dart';
 
 /// 로컬 추천 화면
 ///
@@ -113,9 +113,14 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen> {
 
           // 추천 카드
           final place = state.recommendations[index];
-          return RecommendationCard(
+          return SwipeableRecommendationCard(
             place: place,
             score: null, // TODO: 점수 추가 (Phase 2)
+            onDismissed: () {
+              // 카드가 제거된 후 목록에서도 제거
+              // Provider의 상태는 이미 업데이트되어 있으므로 UI 새로고침만 필요
+              setState(() {});
+            },
           );
         },
       ),

@@ -296,6 +296,33 @@ class UserPreferenceRepository {
     return getRejectedPlaces().contains(placeId);
   }
 
+  /// 거절 목록에서 특정 장소 제거
+  ///
+  /// 실행 취소 기능에 사용
+  Future<UserPreference> removeRejectedPlace(String placeId) async {
+    try {
+      Logger.info('거절 목록에서 제거: $placeId', 'UserPreferenceRepository');
+
+      final preference = getUserPreference();
+      final updatedRejected = List<String>.from(preference.rejectedPlaceIds);
+      updatedRejected.remove(placeId);
+
+      final updatedPreference = preference.copyWith(
+        rejectedPlaceIds: updatedRejected,
+        lastUpdated: DateTime.now(),
+      );
+
+      _saveUserPreference(updatedPreference);
+
+      Logger.info('거절 목록에서 제거 완료', 'UserPreferenceRepository');
+
+      return updatedPreference;
+    } catch (e, stackTrace) {
+      Logger.error('거절 목록 제거 실패', e, stackTrace, 'UserPreferenceRepository');
+      return getUserPreference();
+    }
+  }
+
   // ============================================
   // DELETE - GDPR 준수
   // ============================================
