@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../domain/models/sort_option.dart';
 import '../providers/recommendation_provider.dart';
+import '../widgets/recommendation_filter_sheet.dart';
+import '../widgets/recommendation_sort_menu.dart';
 import '../widgets/swipeable_recommendation_card.dart';
 
 /// 로컬 추천 화면
@@ -54,6 +57,41 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen> {
     context.go('/explore');
   }
 
+  /// 필터 BottomSheet 표시
+  Future<void> _showFilterSheet() async {
+    final state = ref.read(recommendationProvider);
+
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: RecommendationFilterSheet(
+          selectedCategories: state.selectedCategories,
+          maxDistance: state.maxDistance,
+          minRating: state.minRating,
+          minReviewCount: state.minReviewCount,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      // 필터 적용
+      await ref.read(recommendationProvider.notifier).updateFilter(
+            selectedCategories: result['selectedCategories'] as Set<String>,
+            maxDistance: result['maxDistance'] as double,
+            minRating: result['minRating'] as double,
+            minReviewCount: result['minReviewCount'] as int,
+          );
+    }
+  }
+
+  /// 정렬 변경
+  void _handleSortChanged(SortOption option) {
+    ref.read(recommendationProvider.notifier).updateSort(option);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(recommendationProvider);
@@ -65,15 +103,47 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          // 필터 버튼 (Phase 2)
-          IconButton(
-            icon: const Icon(Icons.tune),
-            onPressed: () {
-              // TODO: 필터 화면 열기
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('필터 기능은 곧 추가됩니다')),
-              );
-            },
+          // 필터 버튼
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.tune),
+                tooltip: '필터',
+                onPressed: _showFilterSheet,
+              ),
+              if (state.activeFilterCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${state.activeFilterCount}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          // 정렬 버튼
+          RecommendationSortMenu(
+            currentSortOption: state.currentSortOption,
+            onSortChanged: _handleSortChanged,
           ),
         ],
       ),
