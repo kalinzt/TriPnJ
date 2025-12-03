@@ -7,10 +7,34 @@ import '../../../../core/utils/logger.dart';
 import '../../../../shared/models/place.dart';
 import '../../../../shared/models/place_category.dart';
 
+/// 캐시 항목
+class _CacheEntry<T> {
+  final T data;
+  final DateTime timestamp;
+
+  _CacheEntry(this.data, this.timestamp);
+
+  bool isExpired(Duration ttl) {
+    return DateTime.now().difference(timestamp) > ttl;
+  }
+}
+
 /// Google Places API를 사용하여 여행지 정보를 제공하는 Repository
 class PlacesRepository {
   final ApiService _apiService;
   late final String _apiKey;
+
+  // 캐시 설정
+  final Map<String, _CacheEntry<List<Place>>> _nearbyPlacesCache = {};
+  final Map<String, _CacheEntry<List<Place>>> _searchPlacesCache = {};
+  final Map<String, _CacheEntry<Place>> _placeDetailsCache = {};
+  final Map<String, _CacheEntry<List<Map<String, dynamic>>>> _autocompleteCache = {};
+
+  // 캐시 TTL (Time To Live)
+  static const Duration _nearbyPlacesCacheTTL = Duration(minutes: 10);
+  static const Duration _searchPlacesCacheTTL = Duration(minutes: 5);
+  static const Duration _placeDetailsCacheTTL = Duration(hours: 1);
+  static const Duration _autocompleteCacheTTL = Duration(minutes: 3);
 
   PlacesRepository({ApiService? apiService})
       : _apiService = apiService ?? ApiService() {
@@ -18,6 +42,35 @@ class PlacesRepository {
     if (_apiKey.isEmpty) {
       Logger.warning('Google Places API 키가 설정되지 않았습니다', 'PlacesRepository');
     }
+  }
+
+  // ============================================
+  // 캐시 헬퍼 메서드
+  // ============================================
+
+  /// 캐시 키 생성
+  String _generateCacheKey(Map<String, dynamic> params) {
+    final sortedParams = Map.fromEntries(
+      params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+    );
+    return sortedParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+  }
+
+  /// 모든 캐시 클리어
+  void clearCache() {
+    _nearbyPlacesCache.clear();
+    _searchPlacesCache.clear();
+    _placeDetailsCache.clear();
+    _autocompleteCache.clear();
+    Logger.info('모든 캐시 클리어됨', 'PlacesRepository');
+  }
+
+  /// 만료된 캐시 항목 제거
+  void _cleanExpiredCache() {
+    _nearbyPlacesCache.removeWhere((key, entry) => entry.isExpired(_nearbyPlacesCacheTTL));
+    _searchPlacesCache.removeWhere((key, entry) => entry.isExpired(_searchPlacesCacheTTL));
+    _placeDetailsCache.removeWhere((key, entry) => entry.isExpired(_placeDetailsCacheTTL));
+    _autocompleteCache.removeWhere((key, entry) => entry.isExpired(_autocompleteCacheTTL));
   }
 
   // ============================================
@@ -41,6 +94,23 @@ class PlacesRepository {
     String? keyword,
   }) async {
     try {
+      // 캐시 키 생성
+      final cacheParams = {
+        'lat': latitude.toStringAsFixed(4),
+        'lng': longitude.toStringAsFixed(4),
+        'radius': radius,
+        'category': category.name,
+        if (keyword != null) 'keyword': keyword,
+      };
+      final cacheKey = _generateCacheKey(cacheParams);
+
+      // 캐시 확인
+      final cachedEntry = _nearbyPlacesCache[cacheKey];
+      if (cachedEntry != null && !cachedEntry.isExpired(_nearbyPlacesCacheTTL)) {
+        Logger.info('캐시에서 주변 장소 로드: ${cachedEntry.data.length}개', 'PlacesRepository');
+        return cachedEntry.data;
+      }
+
       Logger.info(
         '주변 장소 검색: ($latitude, $longitude), 반경: ${radius}m, 카테고리: ${category.displayName}',
         'PlacesRepository',
@@ -87,9 +157,15 @@ class PlacesRepository {
       );
 
       // Place 객체로 변환
-      return results
+      final places = results
           .map((json) => Place.fromGooglePlaces(json as Map<String, dynamic>))
           .toList();
+
+      // 캐시에 저장
+      _nearbyPlacesCache[cacheKey] = _CacheEntry(places, DateTime.now());
+      _cleanExpiredCache();
+
+      return places;
     } on ApiException {
       rethrow;
     } catch (e, stackTrace) {
@@ -117,6 +193,22 @@ class PlacesRepository {
     int? radius,
   }) async {
     try {
+      // 캐시 키 생성
+      final cacheParams = {
+        'query': query,
+        if (latitude != null) 'lat': latitude.toStringAsFixed(4),
+        if (longitude != null) 'lng': longitude.toStringAsFixed(4),
+        if (radius != null) 'radius': radius,
+      };
+      final cacheKey = _generateCacheKey(cacheParams);
+
+      // 캐시 확인
+      final cachedEntry = _searchPlacesCache[cacheKey];
+      if (cachedEntry != null && !cachedEntry.isExpired(_searchPlacesCacheTTL)) {
+        Logger.info('캐시에서 검색 결과 로드: ${cachedEntry.data.length}개', 'PlacesRepository');
+        return cachedEntry.data;
+      }
+
       Logger.info('장소 검색: $query', 'PlacesRepository');
 
       // API 키 확인
@@ -154,9 +246,15 @@ class PlacesRepository {
       );
 
       // Place 객체로 변환
-      return results
+      final places = results
           .map((json) => Place.fromGooglePlaces(json as Map<String, dynamic>))
           .toList();
+
+      // 캐시에 저장
+      _searchPlacesCache[cacheKey] = _CacheEntry(places, DateTime.now());
+      _cleanExpiredCache();
+
+      return places;
     } on ApiException {
       rethrow;
     } catch (e, stackTrace) {
@@ -178,6 +276,13 @@ class PlacesRepository {
     required String placeId,
   }) async {
     try {
+      // 캐시 확인
+      final cachedEntry = _placeDetailsCache[placeId];
+      if (cachedEntry != null && !cachedEntry.isExpired(_placeDetailsCacheTTL)) {
+        Logger.info('캐시에서 장소 상세 정보 로드: $placeId', 'PlacesRepository');
+        return cachedEntry.data;
+      }
+
       Logger.info('장소 상세 정보 요청: $placeId', 'PlacesRepository');
 
       // API 키 확인
@@ -225,7 +330,13 @@ class PlacesRepository {
       Logger.info('장소 상세 정보 로드 완료', 'PlacesRepository');
 
       // Place 객체로 변환
-      return Place.fromGooglePlaces(result);
+      final place = Place.fromGooglePlaces(result);
+
+      // 캐시에 저장
+      _placeDetailsCache[placeId] = _CacheEntry(place, DateTime.now());
+      _cleanExpiredCache();
+
+      return place;
     } on ApiException {
       rethrow;
     } catch (e, stackTrace) {
@@ -253,6 +364,22 @@ class PlacesRepository {
     int? radius,
   }) async {
     try {
+      // 캐시 키 생성
+      final cacheParams = {
+        'input': input,
+        if (latitude != null) 'lat': latitude.toStringAsFixed(4),
+        if (longitude != null) 'lng': longitude.toStringAsFixed(4),
+        if (radius != null) 'radius': radius,
+      };
+      final cacheKey = _generateCacheKey(cacheParams);
+
+      // 캐시 확인
+      final cachedEntry = _autocompleteCache[cacheKey];
+      if (cachedEntry != null && !cachedEntry.isExpired(_autocompleteCacheTTL)) {
+        Logger.info('캐시에서 자동완성 결과 로드: ${cachedEntry.data.length}개', 'PlacesRepository');
+        return cachedEntry.data;
+      }
+
       Logger.info('자동완성 검색: $input', 'PlacesRepository');
 
       // API 키 확인
@@ -289,9 +416,15 @@ class PlacesRepository {
         'PlacesRepository',
       );
 
-      return predictions
+      final suggestions = predictions
           .map((prediction) => prediction as Map<String, dynamic>)
           .toList();
+
+      // 캐시에 저장
+      _autocompleteCache[cacheKey] = _CacheEntry(suggestions, DateTime.now());
+      _cleanExpiredCache();
+
+      return suggestions;
     } on ApiException {
       rethrow;
     } catch (e, stackTrace) {

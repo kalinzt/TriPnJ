@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../shared/models/place.dart';
 import '../../../../shared/models/place_category.dart';
 import '../repositories/places_repository.dart';
+import '../../../local_recommend/data/services/user_action_tracker.dart';
 
 // ============================================
 // Repository Providers
@@ -51,6 +53,42 @@ final placeSortTypeProvider =
 final currentLocationProvider = FutureProvider<Position>((ref) async {
   final locationService = ref.watch(locationServiceProvider);
   return await locationService.getCurrentLocation();
+});
+
+/// 현재 주소 정보 Provider (역지오코딩)
+final currentAddressProvider = FutureProvider<String>((ref) async {
+  try {
+    final position = await ref.watch(currentLocationProvider.future);
+
+    final placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    if (placemarks.isNotEmpty) {
+      final placemark = placemarks.first;
+
+      // 한국 주소 형식: [시/도] [구/군] [동/읍/면]
+      final locality = placemark.locality ?? ''; // 시/도 (예: 서울특별시)
+      final subLocality = placemark.subLocality ?? ''; // 구/군 (예: 강남구)
+      final thoroughfare = placemark.thoroughfare ?? ''; // 동/읍/면 (예: 역삼동)
+
+      // 주소 조합
+      final parts = [locality, subLocality, thoroughfare]
+          .where((part) => part.isNotEmpty)
+          .toList();
+
+      if (parts.isEmpty) {
+        return '위치 정보 없음';
+      }
+
+      return parts.join(' ');
+    }
+
+    return '위치 정보 없음';
+  } catch (e) {
+    return '위치 확인 중';
+  }
 });
 
 // ============================================
@@ -298,6 +336,7 @@ class PlacesState {
 class PlacesNotifier extends StateNotifier<PlacesState> {
   final PlacesRepository _repository;
   final LocationService _locationService;
+  final UserActionTracker _actionTracker = UserActionTracker();
 
   PlacesNotifier(this._repository, this._locationService)
       : super(const PlacesState());
@@ -378,6 +417,12 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
         radius: radius,
       );
 
+      // 검색 액션 추적
+      await _actionTracker.trackSearch(
+        query: query,
+        resultCount: places.length,
+      );
+
       state = state.copyWith(
         places: places,
         isLoading: false,
@@ -388,6 +433,40 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
         error: e.toString(),
       );
     }
+  }
+
+  /// 장소 상세 조회 추적
+  Future<void> trackPlaceView(Place place) async {
+    await _actionTracker.trackViewDetail(
+      placeId: place.id,
+      placeName: place.name,
+    );
+  }
+
+  /// 즐겨찾기 추가 추적
+  Future<void> trackAddToFavorite(Place place) async {
+    await _actionTracker.trackAddToFavorite(
+      placeId: place.id,
+      placeName: place.name,
+      score: place.rating,
+    );
+  }
+
+  /// 일정에 추가 추적
+  Future<void> trackAddToPlan(Place place) async {
+    await _actionTracker.trackAddToPlan(
+      placeId: place.id,
+      placeName: place.name,
+      score: place.rating,
+    );
+  }
+
+  /// 공유 추적
+  Future<void> trackShare(Place place) async {
+    await _actionTracker.trackShare(
+      placeId: place.id,
+      placeName: place.name,
+    );
   }
 
   /// 거리 기준 정렬

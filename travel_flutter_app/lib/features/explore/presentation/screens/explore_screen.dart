@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
-import '../../../../core/services/location_service.dart';
 import '../../../../shared/models/place.dart';
 import '../../../../shared/models/place_category.dart';
 import '../../data/providers/places_provider.dart';
@@ -113,28 +112,69 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   /// 상단 헤더
   Widget _buildHeader(BuildContext context) {
+    final currentAddress = ref.watch(currentAddressProvider);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '여행지 탐색',
-                style: AppTextStyles.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '여행지 탐색',
+                  style: AppTextStyles.headlineMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '주변의 멋진 여행지를 찾아보세요',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                const SizedBox(height: 4),
+                currentAddress.when(
+                  data: (address) => Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          address,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  loading: () => Row(
+                    children: [
+                      const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '위치 확인 중...',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  error: (_, __) => Text(
+                    '주변의 멋진 여행지를 찾아보세요',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           // 지도/목록 토글 버튼
           IconButton(
@@ -217,13 +257,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
               color: AppColors.error,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               '오류 발생',
               style: AppTextStyles.titleMedium,
             ),
@@ -255,13 +295,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.explore_off,
               size: 80,
               color: AppColors.textHint,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               '여행지를 찾을 수 없습니다',
               style: AppTextStyles.titleMedium,
             ),

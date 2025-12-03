@@ -29,10 +29,17 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
     setState(() {
       _isFavorite = !_isFavorite;
     });
-    // TODO: 즐겨찾기 상태를 로컬 저장소에 저장
+
+    // 즐겨찾기 액션 추적
+    if (_isFavorite) {
+      ref.read(placesNotifierProvider.notifier).trackAddToFavorite(widget.place);
+    }
   }
 
   void _navigateToDetail() {
+    // 장소 조회 액션 추적
+    ref.read(placesNotifierProvider.notifier).trackPlaceView(widget.place);
+
     // 커스텀 onTap이 있으면 그것을 사용 (장소 선택 모드)
     if (widget.onTap != null) {
       widget.onTap!();
