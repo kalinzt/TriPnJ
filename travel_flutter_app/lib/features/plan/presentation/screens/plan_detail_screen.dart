@@ -4,8 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../data/models/travel_plan_model.dart';
+import '../../data/models/daily_schedule_model.dart';
+import '../../data/models/activity_model.dart';
+import '../../data/repositories/daily_schedule_repository.dart';
+import '../../data/repositories/activity_repository.dart';
 import '../../data/providers/travel_plan_provider.dart';
+import 'add_schedule_screen.dart';
+import 'edit_schedule_screen.dart';
+import 'plan_timetable_screen.dart';
 
 /// 여행 계획 상세 화면
 class PlanDetailScreen extends ConsumerStatefulWidget {
@@ -20,9 +28,19 @@ class PlanDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<PlanDetailScreen> createState() => _PlanDetailScreenState();
 }
 
-class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
+class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
+    with SingleTickerProviderStateMixin {
   bool _isEditing = false;
   late TravelPlan _editedPlan;
+  late TabController _tabController;
+
+  // Repository
+  final _dailyScheduleRepository = DailyScheduleRepository();
+  final _activityRepository = ActivityRepository();
+
+  // 데이터
+  List<DailySchedule> _dailySchedules = [];
+  bool _isLoadingSchedules = false;
 
   // 폼 필드 컨트롤러
   late TextEditingController _nameController;
@@ -35,6 +53,8 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     super.initState();
     _editedPlan = widget.plan;
     _initControllers();
+    _tabController = TabController(length: 3, vsync: this);
+    _loadSchedules();
   }
 
   void _initControllers() {
@@ -54,7 +74,49 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     _destinationController.dispose();
     _budgetController.dispose();
     _descriptionController.dispose();
+    _tabController.dispose();
     super.dispose();
+  }
+
+  // ============================================
+  // 스케줄 로드
+  // ============================================
+
+  Future<void> _loadSchedules() async {
+    setState(() {
+      _isLoadingSchedules = true;
+    });
+
+    try {
+      final schedules =
+          await _dailyScheduleRepository.getDailySchedules(widget.plan.id);
+
+      // 각 스케줄의 activities 로드
+      for (var schedule in schedules) {
+        final activities =
+            await _activityRepository.getActivitiesByDate(schedule.id);
+        // activities를 schedule에 포함
+        schedule = schedule.copyWith(activities: activities);
+        final index = schedules.indexOf(schedule);
+        if (index != -1) {
+          schedules[index] = schedule;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _dailySchedules = schedules;
+          _isLoadingSchedules = false;
+        });
+      }
+    } catch (e) {
+      appLogger.e('스케줄 로드 실패', error: e);
+      if (mounted) {
+        setState(() {
+          _isLoadingSchedules = false;
+        });
+      }
+    }
   }
 
   // ============================================
@@ -197,7 +259,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? '여행 계획 수정' : '여행 계획 상세'),
+        title: Text(_editedPlan.name),
         actions: [
           if (_isEditing)
             TextButton(
@@ -229,142 +291,169 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
               tooltip: '취소',
             ),
         ],
+        bottom: _isEditing
+            ? null
+            : TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: '정보'),
+                  Tab(text: '일정'),
+                  Tab(text: '타임테이블'),
+                ],
+              ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // 상태 배지
-          _buildStatusBadge(),
-          const SizedBox(height: 24),
-
-          // 여행명
-          _buildInfoSection(
-            icon: Icons.flight_takeoff,
-            label: '여행명',
-            child: _isEditing
-                ? TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      hintText: '여행명 입력',
-                      border: OutlineInputBorder(),
-                    ),
-                  )
-                : Text(
-                    _editedPlan.name,
-                    style: AppTextStyles.titleLarge.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-          ),
-          const SizedBox(height: 20),
-
-          // 목적지
-          _buildInfoSection(
-            icon: Icons.location_on,
-            label: '목적지',
-            child: _isEditing
-                ? TextField(
-                    controller: _destinationController,
-                    decoration: const InputDecoration(
-                      hintText: '목적지 입력',
-                      border: OutlineInputBorder(),
-                    ),
-                  )
-                : Text(
-                    _editedPlan.destination,
-                    style: AppTextStyles.bodyLarge,
-                  ),
-          ),
-          const SizedBox(height: 20),
-
-          // 기간
-          _buildInfoSection(
-            icon: Icons.calendar_today,
-            label: '기간',
-            child: _isEditing
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildEditableDateField(
-                        label: '시작 날짜',
-                        date: _editedPlan.startDate,
-                        onTap: _selectStartDate,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEditableDateField(
-                        label: '종료 날짜',
-                        date: _editedPlan.endDate,
-                        onTap: _selectEndDate,
-                      ),
-                    ],
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _formatDateRange(),
-                        style: AppTextStyles.bodyLarge,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${_editedPlan.duration}일',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-          const SizedBox(height: 20),
-
-          // 예산
-          _buildInfoSection(
-            icon: Icons.attach_money,
-            label: '예산',
-            child: _isEditing
-                ? TextField(
-                    controller: _budgetController,
-                    decoration: const InputDecoration(
-                      hintText: '예산 입력 (선택)',
-                      border: OutlineInputBorder(),
-                      suffixText: '원',
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      _ThousandsSeparatorInputFormatter(),
-                    ],
-                  )
-                : Text(
-                    _editedPlan.budget != null
-                        ? '${NumberFormat('#,###').format(_editedPlan.budget!)}원'
-                        : '설정 안 함',
-                    style: AppTextStyles.bodyLarge,
-                  ),
-          ),
-          const SizedBox(height: 20),
-
-          // 설명
-          if (_editedPlan.description != null || _isEditing)
-            _buildInfoSection(
-              icon: Icons.description,
-              label: '설명',
-              child: _isEditing
-                  ? TextField(
-                      controller: _descriptionController,
-                      decoration: const InputDecoration(
-                        hintText: '설명 입력 (선택)',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 4,
-                    )
-                  : Text(
-                      _editedPlan.description ?? '',
-                      style: AppTextStyles.bodyMedium,
-                    ),
+      body: _isEditing
+          ? _buildInfoTab()
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildInfoTab(),
+                _buildScheduleListTab(),
+                PlanTimetableScreen(
+                  plan: _editedPlan,
+                  dailySchedules: _dailySchedules,
+                ),
+              ],
             ),
-        ],
-      ),
+    );
+  }
+
+  /// 정보 탭 (기존 내용)
+  Widget _buildInfoTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // 상태 배지
+        _buildStatusBadge(),
+        const SizedBox(height: 24),
+
+        // 여행명
+        _buildInfoSection(
+          icon: Icons.flight_takeoff,
+          label: '여행명',
+          child: _isEditing
+              ? TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    hintText: '여행명 입력',
+                    border: OutlineInputBorder(),
+                  ),
+                )
+              : Text(
+                  _editedPlan.name,
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 20),
+
+        // 목적지
+        _buildInfoSection(
+          icon: Icons.location_on,
+          label: '목적지',
+          child: _isEditing
+              ? TextField(
+                  controller: _destinationController,
+                  decoration: const InputDecoration(
+                    hintText: '목적지 입력',
+                    border: OutlineInputBorder(),
+                  ),
+                )
+              : Text(
+                  _editedPlan.destination,
+                  style: AppTextStyles.bodyLarge,
+                ),
+        ),
+        const SizedBox(height: 20),
+
+        // 기간
+        _buildInfoSection(
+          icon: Icons.calendar_today,
+          label: '기간',
+          child: _isEditing
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildEditableDateField(
+                      label: '시작 날짜',
+                      date: _editedPlan.startDate,
+                      onTap: _selectStartDate,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildEditableDateField(
+                      label: '종료 날짜',
+                      date: _editedPlan.endDate,
+                      onTap: _selectEndDate,
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _formatDateRange(),
+                      style: AppTextStyles.bodyLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_editedPlan.duration}일',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+        const SizedBox(height: 20),
+
+        // 예산
+        _buildInfoSection(
+          icon: Icons.attach_money,
+          label: '예산',
+          child: _isEditing
+              ? TextField(
+                  controller: _budgetController,
+                  decoration: const InputDecoration(
+                    hintText: '예산 입력 (선택)',
+                    border: OutlineInputBorder(),
+                    suffixText: '원',
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    _ThousandsSeparatorInputFormatter(),
+                  ],
+                )
+              : Text(
+                  _editedPlan.budget != null
+                      ? '${NumberFormat('#,###').format(_editedPlan.budget!)}원'
+                      : '설정 안 함',
+                  style: AppTextStyles.bodyLarge,
+                ),
+        ),
+        const SizedBox(height: 20),
+
+        // 설명
+        if (_editedPlan.description != null || _isEditing)
+          _buildInfoSection(
+            icon: Icons.description,
+            label: '설명',
+            child: _isEditing
+                ? TextField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
+                      hintText: '설명 입력 (선택)',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 4,
+                  )
+                : Text(
+                    _editedPlan.description ?? '',
+                    style: AppTextStyles.bodyMedium,
+                  ),
+          ),
+      ],
     );
   }
 
@@ -487,6 +576,167 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
         ),
       ),
     );
+  }
+
+  /// 일정 탭
+  Widget _buildScheduleListTab() {
+    if (_isLoadingSchedules) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_dailySchedules.isEmpty) {
+      return const Center(
+        child: Text(
+          '아직 일정이 없습니다.\n날짜를 선택하여 일정을 추가해보세요.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadSchedules,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _dailySchedules.length,
+        itemBuilder: (context, index) {
+          final schedule = _dailySchedules[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 날짜 헤더
+                  Row(
+                    children: [
+                      Text(
+                        '${schedule.date.year}년 ${schedule.date.month}월 ${schedule.date.day}일',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => _addActivity(schedule.date),
+                        icon: const Icon(Icons.add),
+                        tooltip: '일정 추가',
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+
+                  // 활동 목록
+                  if (schedule.activities.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        '일정 없음',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  else
+                    ...schedule.sortedActivities.map((activity) {
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          _getActivityIcon(activity.type),
+                          color: _getActivityColor(activity.type),
+                        ),
+                        title: Text(activity.title),
+                        subtitle: Text(
+                          '${_formatTime(activity.startTime)} - ${_formatTime(activity.endTime)}',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => _editActivity(activity),
+                      );
+                    }),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Activity 타입별 아이콘
+  IconData _getActivityIcon(String type) {
+    switch (type) {
+      case 'flight':
+        return Icons.flight;
+      case 'accommodation':
+        return Icons.hotel;
+      case 'tour':
+        return Icons.place;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'activity':
+        return Icons.local_activity;
+      default:
+        return Icons.event;
+    }
+  }
+
+  /// Activity 타입별 색상
+  Color _getActivityColor(String type) {
+    switch (type) {
+      case 'flight':
+        return const Color(0xFF2196F3);
+      case 'accommodation':
+        return const Color(0xFF4CAF50);
+      case 'tour':
+        return const Color(0xFFFF9800);
+      case 'restaurant':
+        return const Color(0xFFE91E63);
+      case 'activity':
+        return const Color(0xFF9C27B0);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  /// 시간 포맷
+  String _formatTime(DateTime time) {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// 일정 추가
+  Future<void> _addActivity(DateTime date) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddScheduleScreen(
+          date: date,
+          travelPlanId: widget.plan.id,
+        ),
+      ),
+    );
+
+    // 일정이 추가되었으면 새로고침
+    if (result == true) {
+      await _loadSchedules();
+    }
+  }
+
+  /// 일정 편집
+  Future<void> _editActivity(Activity activity) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditScheduleScreen(
+          activity: activity,
+          travelPlanId: widget.plan.id,
+        ),
+      ),
+    );
+
+    // 일정이 수정되었으면 새로고침
+    if (result == true) {
+      await _loadSchedules();
+    }
   }
 
   /// 날짜 범위 포맷

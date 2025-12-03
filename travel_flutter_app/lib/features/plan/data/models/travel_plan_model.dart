@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'daily_schedule_model.dart';
 
 part 'travel_plan_model.g.dart';
 
@@ -52,6 +53,10 @@ class TravelPlan extends HiveObject {
   @HiveField(9)
   DateTime updatedAt;
 
+  /// 날짜별 일정 목록
+  @HiveField(10)
+  List<DailySchedule> dailySchedules;
+
   TravelPlan({
     required this.id,
     required this.name,
@@ -63,11 +68,45 @@ class TravelPlan extends HiveObject {
     required this.status,
     required this.createdAt,
     required this.updatedAt,
-  });
+    List<DailySchedule>? dailySchedules,
+  }) : dailySchedules = dailySchedules ?? [];
 
   /// 여행 기간 (일수)
   int get duration {
     return endDate.difference(startDate).inDays + 1;
+  }
+
+  /// startDate부터 endDate까지의 모든 날짜 리스트
+  List<DateTime> get allDates {
+    final dates = <DateTime>[];
+    final start = DateTime(startDate.year, startDate.month, startDate.day);
+    final end = DateTime(endDate.year, endDate.month, endDate.day);
+
+    for (var date = start;
+        date.isBefore(end) || date.isAtSameMomentAs(end);
+        date = date.add(const Duration(days: 1))) {
+      dates.add(date);
+    }
+
+    return dates;
+  }
+
+  /// 특정 날짜의 DailySchedule 조회
+  DailySchedule? getDailyScheduleByDate(DateTime date) {
+    final targetDate = DateTime(date.year, date.month, date.day);
+
+    try {
+      return dailySchedules.firstWhere((schedule) {
+        final scheduleDate = DateTime(
+          schedule.date.year,
+          schedule.date.month,
+          schedule.date.day,
+        );
+        return scheduleDate.isAtSameMomentAs(targetDate);
+      });
+    } catch (e) {
+      return null;
+    }
   }
 
   /// 상태를 TravelStatus enum으로 변환
@@ -112,6 +151,7 @@ class TravelPlan extends HiveObject {
     String? status,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<DailySchedule>? dailySchedules,
   }) {
     return TravelPlan(
       id: id ?? this.id,
@@ -124,6 +164,7 @@ class TravelPlan extends HiveObject {
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      dailySchedules: dailySchedules ?? this.dailySchedules,
     );
   }
 
@@ -140,6 +181,8 @@ class TravelPlan extends HiveObject {
       'status': status,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'dailySchedules':
+          dailySchedules.map((schedule) => schedule.toJson()).toList(),
     };
   }
 
@@ -156,6 +199,12 @@ class TravelPlan extends HiveObject {
       status: json['status'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      dailySchedules: json['dailySchedules'] != null
+          ? (json['dailySchedules'] as List<dynamic>)
+              .map((scheduleJson) =>
+                  DailySchedule.fromJson(scheduleJson as Map<String, dynamic>))
+              .toList()
+          : [],
     );
   }
 
