@@ -7,6 +7,7 @@ import 'app.dart';
 import 'core/utils/logger.dart';
 import 'core/utils/recommendation_logger.dart';
 import 'features/local_recommend/data/services/recommendation_analytics.dart';
+import 'features/plan/data/models/travel_plan_model.dart';
 
 /// 앱의 진입점
 /// 필요한 초기화 작업을 수행한 후 앱 실행
@@ -108,10 +109,14 @@ Future<void> _initializeHive() async {
   try {
     Logger.info('Hive 초기화 중...', 'main');
     await Hive.initFlutter();
-    Logger.info('Hive 초기화 완료', 'main');
 
-    // TODO: Hive 어댑터 등록
-    // Hive.registerAdapter(YourModelAdapter());
+    // Hive 어댑터 등록
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(TravelPlanAdapter());
+      Logger.info('TravelPlanAdapter 등록 완료', 'main');
+    }
+
+    Logger.info('Hive 초기화 완료', 'main');
   } catch (e, stackTrace) {
     Logger.error('Hive 초기화 실패', e, stackTrace, 'main');
     rethrow;
