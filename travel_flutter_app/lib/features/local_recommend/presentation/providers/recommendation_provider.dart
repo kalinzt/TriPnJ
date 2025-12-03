@@ -2,9 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/debouncer.dart';
+import '../../../../core/utils/recommendation_logger.dart';
 import '../../../../shared/models/place.dart';
 import '../../data/providers/place_analysis_provider.dart';
 import '../../data/services/place_analysis_service.dart';
+import '../../data/services/recommendation_analytics.dart';
+import '../../data/services/performance_monitor.dart';
 import '../../domain/models/sort_option.dart';
 import '../../domain/models/time_filter.dart';
 
@@ -85,6 +88,9 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
   final PlaceAnalysisService _placeAnalysisService;
   final LocationService _locationService;
   final Debouncer _filterDebouncer = Debouncer(duration: const Duration(milliseconds: 800));
+  final RecommendationLogger _recLogger = RecommendationLogger();
+  final RecommendationAnalytics _analytics = RecommendationAnalytics();
+  final PerformanceMonitor _perfMonitor = PerformanceMonitor();
 
   RecommendationNotifier({
     required PlaceAnalysisService placeAnalysisService,
@@ -115,29 +121,75 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
         errorMessage: null,
       );
 
-      // 현재 위치 가져오기
-      final position = await _locationService.getCurrentLocation();
+      // 성능 모니터링 적용
+      await _perfMonitor.measure(
+        operation: 'recommendation_generation',
+        task: () async {
+          // 현재 위치 가져오기
+          final position = await _locationService.getCurrentLocation();
 
-      // 추천 목록 가져오기
-      final recommendations = await _placeAnalysisService.getTopRecommendations(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        count: 20,
-      );
+          // 추천 목록 가져오기
+          final recommendations = await _placeAnalysisService.getTopRecommendations(
+            latitude: position.latitude,
+            longitude: position.longitude,
+            count: 20,
+          );
 
-      Logger.info(
-        '추천 목록 로드 완료: ${recommendations.length}개',
-        'RecommendationNotifier',
-      );
+          // 추천 생성 로그 및 메트릭 기록
+          if (recommendations.isNotEmpty) {
+            final avgScore = recommendations
+                .map((p) => p.rating ?? 0.0)
+                .reduce((a, b) => a + b) / recommendations.length;
 
-      state = state.copyWith(
-        recommendations: recommendations,
-        isLoading: false,
-        currentPage: 1,
-        hasMore: recommendations.length >= 20,
+            _recLogger.logRecommendationGenerated(
+              recommendationCount: recommendations.length,
+              averageScore: avgScore,
+              duration: const Duration(milliseconds: 0), // 실제 duration은 measure에서 측정
+              algorithmType: 'hybrid',
+              metadata: {
+                'filter_count': state.activeFilterCount,
+                'sort_option': state.currentSortOption.name,
+              },
+            );
+
+            await _analytics.recordRecommendationGenerated(
+              count: recommendations.length,
+              averageScore: avgScore,
+            );
+          }
+
+          Logger.info(
+            '추천 목록 로드 완료: ${recommendations.length}개',
+            'RecommendationNotifier',
+          );
+
+          state = state.copyWith(
+            recommendations: recommendations,
+            isLoading: false,
+            currentPage: 1,
+            hasMore: recommendations.length >= 20,
+          );
+        },
+        metadata: {
+          'count': 20,
+          'has_filters': state.activeFilterCount > 0,
+        },
       );
     } catch (e, stackTrace) {
       Logger.error('추천 목록 로드 실패', e, stackTrace, 'RecommendationNotifier');
+
+      // 에러 로그 및 메트릭 기록
+      _recLogger.logError(
+        error: e,
+        stackTrace: stackTrace,
+        context: 'RecommendationNotifier.loadInitialRecommendations',
+      );
+
+      await _analytics.recordError(
+        errorType: e.runtimeType.toString(),
+        context: 'loadInitialRecommendations',
+        message: e.toString(),
+      );
 
       state = state.copyWith(
         isLoading: false,

@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'app.dart';
 import 'core/utils/logger.dart';
+import 'core/utils/recommendation_logger.dart';
+import 'features/local_recommend/data/services/recommendation_analytics.dart';
 
 /// 앱의 진입점
 /// 필요한 초기화 작업을 수행한 후 앱 실행
@@ -27,7 +29,12 @@ void main() async {
     await _initializeHive();
 
     // ============================================
-    // 3. 시스템 UI 설정
+    // 3. 로깅 및 분석 시스템 초기화
+    // ============================================
+    await _initializeLoggingAndAnalytics();
+
+    // ============================================
+    // 4. 시스템 UI 설정
     // ============================================
     _configureSystemUI();
 
@@ -108,6 +115,26 @@ Future<void> _initializeHive() async {
   } catch (e, stackTrace) {
     Logger.error('Hive 초기화 실패', e, stackTrace, 'main');
     rethrow;
+  }
+}
+
+/// 로깅 및 분석 시스템 초기화
+Future<void> _initializeLoggingAndAnalytics() async {
+  try {
+    Logger.info('로깅 및 분석 시스템 초기화 중...', 'main');
+
+    // 추천 로거 초기화
+    final recLogger = RecommendationLogger();
+    recLogger.init();
+
+    // 추천 분석 시스템 초기화
+    final analytics = RecommendationAnalytics();
+    await analytics.init();
+
+    Logger.info('로깅 및 분석 시스템 초기화 완료', 'main');
+  } catch (e, stackTrace) {
+    Logger.error('로깅 및 분석 시스템 초기화 실패', e, stackTrace, 'main');
+    // 로깅 시스템 실패는 앱 실행을 막지 않음
   }
 }
 
