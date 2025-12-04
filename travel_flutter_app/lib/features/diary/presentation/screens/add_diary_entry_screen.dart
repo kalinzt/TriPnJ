@@ -510,7 +510,7 @@ class _AddDiaryEntryScreenState extends State<AddDiaryEntryScreen> {
                 controller: _notesController,
                 decoration: const InputDecoration(
                   labelText: '비고',
-                  hintText: '추가로 기록하고 싶은 내용을 작성하세요',
+                  hintText: '오늘의 일과를 작성해보세요.',
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 5,

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -8,6 +9,7 @@ import '../../data/models/diary_entry_model.dart';
 import '../../data/repositories/diary_repository.dart';
 import 'add_diary_entry_screen.dart';
 import 'edit_diary_entry_screen.dart';
+import '../widgets/photo_viewer_screen.dart';
 
 /// 여행 다이어리 상세 화면
 class DiaryDetailScreen extends StatefulWidget {
@@ -385,27 +387,71 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             itemCount: entry.photos.length,
             itemBuilder: (context, index) {
               final photo = entry.photos[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.image, size: 40, color: Colors.grey),
-                    if (photo.description != null)
-                      Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Text(
-                          photo.description!,
-                          style: const TextStyle(fontSize: 10),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
+              return GestureDetector(
+                onTap: () {
+                  // 전체화면 이미지 뷰어로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PhotoViewerScreen(
+                        photos: entry.photos,
+                        initialIndex: index,
                       ),
-                  ],
+                    ),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // 실제 이미지 표시
+                      Image.file(
+                        File(photo.url),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.broken_image,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      ),
+                      // 설명이 있으면 하단에 표시
+                      if (photo.description != null)
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.7),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                            child: Text(
+                              photo.description!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               );
             },
