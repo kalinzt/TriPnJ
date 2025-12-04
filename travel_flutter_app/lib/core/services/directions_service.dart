@@ -195,6 +195,46 @@ class DirectionsService {
           final distanceData = leg['distance'] as Map<String, dynamic>?;
           final distanceText = distanceData?['text'] as String? ?? 'Unknown';
 
+          // 좌표 정보 추출
+          final startLocation = leg['start_location'] as Map<String, dynamic>?;
+          final endLocation = leg['end_location'] as Map<String, dynamic>?;
+          RouteCoordinates? coordinates;
+
+          if (startLocation != null && endLocation != null) {
+            final startLat = startLocation['lat'] as double?;
+            final startLng = startLocation['lng'] as double?;
+            final endLat = endLocation['lat'] as double?;
+            final endLng = endLocation['lng'] as double?;
+
+            if (startLat != null && startLng != null && endLat != null && endLng != null) {
+              // 경유지 좌표 추출
+              final steps = leg['steps'] as List<dynamic>?;
+              final waypoints = <Map<String, double>>[];
+
+              if (steps != null) {
+                for (var step in steps) {
+                  final stepMap = step as Map<String, dynamic>;
+                  final stepStartLoc = stepMap['start_location'] as Map<String, dynamic>?;
+                  if (stepStartLoc != null) {
+                    final lat = stepStartLoc['lat'] as double?;
+                    final lng = stepStartLoc['lng'] as double?;
+                    if (lat != null && lng != null) {
+                      waypoints.add({'lat': lat, 'lng': lng});
+                    }
+                  }
+                }
+              }
+
+              coordinates = RouteCoordinates(
+                startLatitude: startLat,
+                startLongitude: startLng,
+                endLatitude: endLat,
+                endLongitude: endLng,
+                waypoints: waypoints,
+              );
+            }
+          }
+
           // 경로 단계(steps) 추출 및 상세 정보 파싱
           final steps = leg['steps'] as List<dynamic>?;
           String? vehicleInfo;
@@ -312,6 +352,7 @@ class DirectionsService {
             durationMinutes: durationMinutes,
             distance: distanceText,
             details: details,
+            coordinates: coordinates,
           );
 
           routeOptions.add(routeOption);

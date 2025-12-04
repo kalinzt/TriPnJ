@@ -7,6 +7,7 @@ import '../../data/repositories/daily_schedule_repository.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/services/directions_service.dart';
 import '../../../plan/data/models/route_option_model.dart';
+import '../widgets/route_map_view.dart';
 
 /// 스케줄 추가 화면
 class AddScheduleScreen extends StatefulWidget {
@@ -53,6 +54,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   // 경로 검색 상태
   bool _isSearching = false;
   List<RouteOption>? _routeOptions;
+  RouteOption? _selectedRoute;
 
   @override
   void initState() {
@@ -120,6 +122,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     setState(() {
       _isSearching = true;
       _routeOptions = null;
+      _selectedRoute = null;
     });
 
     appLogger.i('경로 검색 시작: $departure → $arrival (${_selectedTravelMode.name})');
@@ -163,6 +166,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   /// 경로 옵션 선택
   void _selectRoute(RouteOption route) {
     setState(() {
+      _selectedRoute = route;
+
       // 교통편 자동 채우기
       _transportationController.text = route.vehicleInfo ?? '';
 
@@ -179,11 +184,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           startDateTime.add(Duration(minutes: route.durationMinutes));
 
       _endTime = TimeOfDay(hour: endDateTime.hour, minute: endDateTime.minute);
-
-      // 비고에 상세 정보 추가
-      if (route.details != null) {
-        _notesController.text = route.details!;
-      }
     });
 
     appLogger.i('경로 선택: ${route.routeId}, 소요 시간: ${route.durationMinutes}분');
@@ -465,25 +465,35 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             const SizedBox(height: 16),
 
             // 경로 검색 결과
-            if (_routeOptions != null && _routeOptions!.isNotEmpty) ...[
+            if (_selectedRoute != null) ...[
+              const Text(
+                '선택된 경로',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              RouteMapView(
+                route: _selectedRoute!,
+                onSelect: null, // 이미 선택된 경로이므로 선택 버튼 숨김
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _selectedRoute = null;
+                  });
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('다른 경로 선택'),
+              ),
+              const SizedBox(height: 16),
+            ] else if (_routeOptions != null && _routeOptions!.isNotEmpty) ...[
               const Text(
                 '경로 옵션',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...(_routeOptions!.map((route) => Card(
-                    child: ListTile(
-                      title: Text(route.vehicleInfo ?? '정보 없음'),
-                      subtitle: Text(
-                        '소요 시간: ${route.durationMinutes}분\n'
-                        '거리: ${route.distance}\n'
-                        '${route.details ?? ""}',
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () => _selectRoute(route),
-                        child: const Text('선택'),
-                      ),
-                    ),
+              ...(_routeOptions!.map((route) => RouteMapView(
+                    route: route,
+                    onSelect: () => _selectRoute(route),
                   ))),
               const SizedBox(height: 16),
             ],
@@ -491,11 +501,15 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             // 교통편 (자동 또는 수동)
             TextFormField(
               controller: _transportationController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: '교통편',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 hintText: '경로 선택 시 자동 입력',
+                suffixIcon: _selectedRoute != null
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : null,
               ),
+              readOnly: _selectedRoute != null,
             ),
             const SizedBox(height: 16),
 

@@ -1,3 +1,52 @@
+/// 경로 좌표 정보
+class RouteCoordinates {
+  /// 출발지 위도
+  final double startLatitude;
+
+  /// 출발지 경도
+  final double startLongitude;
+
+  /// 도착지 위도
+  final double endLatitude;
+
+  /// 도착지 경도
+  final double endLongitude;
+
+  /// 경유지 좌표 리스트 (위도, 경도)
+  final List<Map<String, double>> waypoints;
+
+  const RouteCoordinates({
+    required this.startLatitude,
+    required this.startLongitude,
+    required this.endLatitude,
+    required this.endLongitude,
+    this.waypoints = const [],
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'startLatitude': startLatitude,
+      'startLongitude': startLongitude,
+      'endLatitude': endLatitude,
+      'endLongitude': endLongitude,
+      'waypoints': waypoints,
+    };
+  }
+
+  factory RouteCoordinates.fromJson(Map<String, dynamic> json) {
+    return RouteCoordinates(
+      startLatitude: json['startLatitude'] as double,
+      startLongitude: json['startLongitude'] as double,
+      endLatitude: json['endLatitude'] as double,
+      endLongitude: json['endLongitude'] as double,
+      waypoints: (json['waypoints'] as List<dynamic>?)
+              ?.map((e) => Map<String, double>.from(e as Map))
+              .toList() ??
+          const [],
+    );
+  }
+}
+
 /// 경로 검색 결과 모델
 class RouteOption {
   /// 고유 ID
@@ -18,6 +67,9 @@ class RouteOption {
   /// 추가 정보 (예: "도하 경유 3시간", 선택)
   final String? details;
 
+  /// 경로 좌표 정보
+  final RouteCoordinates? coordinates;
+
   const RouteOption({
     required this.routeId,
     required this.transportMode,
@@ -25,6 +77,7 @@ class RouteOption {
     required this.durationMinutes,
     required this.distance,
     this.details,
+    this.coordinates,
   });
 
   /// JSON으로 변환
@@ -36,6 +89,7 @@ class RouteOption {
       'durationMinutes': durationMinutes,
       'distance': distance,
       'details': details,
+      'coordinates': coordinates?.toJson(),
     };
   }
 
@@ -48,6 +102,9 @@ class RouteOption {
       durationMinutes: json['durationMinutes'] as int,
       distance: json['distance'] as String,
       details: json['details'] as String?,
+      coordinates: json['coordinates'] != null
+          ? RouteCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -59,6 +116,7 @@ class RouteOption {
     int? durationMinutes,
     String? distance,
     String? details,
+    RouteCoordinates? coordinates,
   }) {
     return RouteOption(
       routeId: routeId ?? this.routeId,
@@ -67,6 +125,7 @@ class RouteOption {
       durationMinutes: durationMinutes ?? this.durationMinutes,
       distance: distance ?? this.distance,
       details: details ?? this.details,
+      coordinates: coordinates ?? this.coordinates,
     );
   }
 
@@ -74,7 +133,7 @@ class RouteOption {
   String toString() {
     return 'RouteOption(routeId: $routeId, transportMode: $transportMode, '
         'vehicleInfo: $vehicleInfo, durationMinutes: $durationMinutes, '
-        'distance: $distance, details: $details)';
+        'distance: $distance, details: $details, coordinates: $coordinates)';
   }
 
   @override
@@ -87,7 +146,8 @@ class RouteOption {
         other.vehicleInfo == vehicleInfo &&
         other.durationMinutes == durationMinutes &&
         other.distance == distance &&
-        other.details == details;
+        other.details == details &&
+        other.coordinates == coordinates;
   }
 
   @override
@@ -99,6 +159,7 @@ class RouteOption {
       durationMinutes,
       distance,
       details,
+      coordinates,
     );
   }
 }
