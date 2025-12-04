@@ -71,47 +71,49 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 8,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _currentIndex,
-          onTap: _onTapNavigation,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textSecondary,
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            height: 1.5,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w400,
-            height: 1.5,
-          ),
-          elevation: 0,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          items: _navigationItems.map((item) {
-            final isSelected = _navigationItems[_currentIndex] == item;
-            return BottomNavigationBarItem(
-              icon: Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Icon(
-                  isSelected ? item.activeIcon : item.icon,
-                  size: 26,
-                ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadow,
+                blurRadius: 8,
+                offset: Offset(0, -2),
               ),
-              label: item.label,
-            );
-          }).toList(),
+            ],
+          ),
+          child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            currentIndex: _currentIndex,
+            onTap: _onTapNavigation,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.textSecondary,
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              height: 1.5,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+            elevation: 0,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            items: _navigationItems.map((item) {
+              final isSelected = _navigationItems[_currentIndex] == item;
+              return BottomNavigationBarItem(
+                icon: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Icon(
+                    isSelected ? item.activeIcon : item.icon,
+                    size: 26,
+                  ),
+                ),
+                label: item.label,
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

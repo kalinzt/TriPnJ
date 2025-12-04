@@ -19,14 +19,11 @@ class PlanTimetableScreen extends StatefulWidget {
 }
 
 class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
-  // 뷰 모드: true = 하루 보기, false = 전체 보기
-  bool _isDailyView = true;
-
-  // 선택된 날짜 (하루 보기 모드)
+  // 선택된 날짜
   late DateTime _selectedDate;
 
-  // 시간 설정
-  static const int _startHour = 6;
+  // 시간 설정 (24시간 전체)
+  static const int _startHour = 0;
   static const int _endHour = 24;
   static const double _pixelsPerHour = 60.0;
 
@@ -54,12 +51,6 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
     }
   }
 
-  /// 뷰 모드 전환
-  void _toggleViewMode() {
-    setState(() {
-      _isDailyView = !_isDailyView;
-    });
-  }
 
   /// 타입별 색상
   Color _getActivityColor(String type) {
@@ -168,52 +159,6 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 토글 버튼
-        _buildToggleButtons(),
-        const Divider(height: 1),
-
-        // 뷰 내용
-        Expanded(
-          child: _isDailyView ? _buildDailyView() : _buildOverallView(),
-        ),
-      ],
-    );
-  }
-
-  /// 토글 버튼
-  Widget _buildToggleButtons() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildToggleButton('하루 보기', _isDailyView),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildToggleButton('전체 보기', !_isDailyView),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleButton(String label, bool isSelected) {
-    return ElevatedButton(
-      onPressed: isSelected ? null : _toggleViewMode,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.blue : Colors.grey[300],
-        foregroundColor: isSelected ? Colors.white : Colors.black,
-        elevation: isSelected ? 2 : 0,
-      ),
-      child: Text(label),
-    );
-  }
-
-  /// 하루 보기
-  Widget _buildDailyView() {
     // 선택된 날짜의 DailySchedule 찾기
     DailySchedule? schedule;
     for (var s in widget.dailySchedules) {
@@ -418,135 +363,6 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
     );
   }
 
-  /// 전체 보기
-  Widget _buildOverallView() {
-    final allDates = widget.plan.allDates;
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: allDates.length,
-      itemBuilder: (context, index) {
-        final date = allDates[index];
-
-        // 해당 날짜의 DailySchedule 찾기
-        DailySchedule? schedule;
-        for (var s in widget.dailySchedules) {
-          if (_isSameDay(s.date, date)) {
-            schedule = s;
-            break;
-          }
-        }
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 날짜 헤더
-                Text(
-                  '${date.year}/${date.month}/${date.day}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // 압축된 타임라인
-                if (schedule != null && schedule.activities.isNotEmpty)
-                  _buildCompressedTimeline(schedule.sortedActivities)
-                else
-                  const Text(
-                    '일정 없음',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// 압축된 타임라인 (전체 보기)
-  Widget _buildCompressedTimeline(List<Activity> activities) {
-    const compressedPixelsPerHour = 20.0;
-
-    return SizedBox(
-      height: (_endHour - _startHour) * compressedPixelsPerHour,
-      child: Stack(
-        children: [
-          // 시간 눈금 (압축)
-          Row(
-            children: List.generate(_endHour - _startHour + 1, (index) {
-              final hour = _startHour + index;
-              return Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      left: BorderSide(
-                        color: Colors.grey[300]!,
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    hour.toString().padLeft(2, '0'),
-                    style: const TextStyle(fontSize: 8, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              );
-            }),
-          ),
-
-          // Activity 블록들 (압축)
-          ...activities.map((activity) =>
-              _buildCompressedActivityBlock(activity, compressedPixelsPerHour)),
-        ],
-      ),
-    );
-  }
-
-  /// Activity 블록 (압축, 전체 보기)
-  Widget _buildCompressedActivityBlock(
-      Activity activity, double pixelsPerHour) {
-    final startMinutes = activity.startTime.hour * 60 + activity.startTime.minute;
-    // ignore: prefer_const_declarations
-    final baseMinutes = _startHour * 60;
-    // ignore: prefer_const_declarations
-    final totalMinutes = (_endHour - _startHour) * 60;
-
-    final leftOffset = ((startMinutes - baseMinutes) / totalMinutes);
-    final durationMinutes =
-        activity.endTime.difference(activity.startTime).inMinutes;
-    final width = (durationMinutes / totalMinutes);
-
-    return Positioned(
-      left: leftOffset * (MediaQuery.of(context).size.width - 64),
-      top: 24,
-      child: GestureDetector(
-        onTap: () => _showActivityDetail(activity),
-        child: Container(
-          width: width * (MediaQuery.of(context).size.width - 64),
-          height: 30,
-          decoration: BoxDecoration(
-            color: _getActivityColor(activity.type).withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Icon(
-              _getActivityIcon(activity.type),
-              size: 16,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   /// 같은 날짜인지 확인
   bool _isSameDay(DateTime a, DateTime b) {
