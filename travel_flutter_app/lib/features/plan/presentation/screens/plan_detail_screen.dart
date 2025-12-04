@@ -300,19 +300,21 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                 ],
               ),
       ),
-      body: _isEditing
-          ? _buildInfoTab()
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildInfoTab(),
-                _buildScheduleListTab(),
-                PlanTimetableScreen(
-                  plan: _editedPlan,
-                  dailySchedules: _dailySchedules,
-                ),
-              ],
-            ),
+      body: SafeArea(
+        child: _isEditing
+            ? _buildInfoTab()
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildInfoTab(),
+                  _buildScheduleListTab(),
+                  PlanTimetableScreen(
+                    plan: _editedPlan,
+                    dailySchedules: _dailySchedules,
+                  ),
+                ],
+              ),
+      ),
     );
   }
 

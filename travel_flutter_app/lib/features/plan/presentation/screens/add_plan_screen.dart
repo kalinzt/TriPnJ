@@ -201,11 +201,12 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
             ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
             // 여행명
             _buildTextField(
               controller: _nameController,
@@ -320,6 +321,7 @@ class _AddPlanScreenState extends ConsumerState<AddPlanScreen> {
           ],
         ),
       ),
+        ),
     );
   }
 

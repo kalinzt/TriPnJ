@@ -332,11 +332,12 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
             // 날짜 선택
             ListTile(
               title: const Text('날짜'),
@@ -551,6 +552,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           ],
         ),
       ),
+        ),
     );
   }
 }
