@@ -170,9 +170,10 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
         id: '',
         travelPlanId: widget.plan.id,
         date: _selectedDate,
+        title: '',
         weather: 'sunny',
         expenses: [],
-        photoUrls: [],
+        photos: [],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
@@ -343,7 +344,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
           style: AppTextStyles.titleSmall,
         ),
         const SizedBox(height: 12),
-        if (entry.photoUrls.isEmpty)
+        if (entry.photos.isEmpty)
           const Text(
             '등록된 사진이 없습니다',
             style: TextStyle(color: AppColors.textSecondary),
@@ -357,14 +358,31 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
             ),
-            itemCount: entry.photoUrls.length,
+            itemCount: entry.photos.length,
             itemBuilder: (context, index) {
+              final photo = entry.photos[index];
               return Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.image, size: 40, color: Colors.grey),
+                    if (photo.description != null)
+                      Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Text(
+                          photo.description!,
+                          style: const TextStyle(fontSize: 10),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                  ],
+                ),
               );
             },
           ),

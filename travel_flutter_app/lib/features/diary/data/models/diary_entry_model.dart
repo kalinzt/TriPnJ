@@ -3,10 +3,11 @@ class DiaryEntry {
   final String id;
   final String travelPlanId;
   final DateTime date;
-  final String weather; // sunny, cloudy, rainy, snowy, etc.
+  final String title; // 다이어리 타이틀
+  final String weather; // sunny, partly_cloudy, cloudy, rainy, snowy, windy
   final List<DiaryExpense> expenses;
   final String? notes;
-  final List<String> photoUrls;
+  final List<DiaryPhoto> photos; // 이미지 URL과 설명 (최대 15장)
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -14,10 +15,11 @@ class DiaryEntry {
     required this.id,
     required this.travelPlanId,
     required this.date,
+    required this.title,
     required this.weather,
     required this.expenses,
     this.notes,
-    required this.photoUrls,
+    required this.photos,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -33,10 +35,11 @@ class DiaryEntry {
       'id': id,
       'travelPlanId': travelPlanId,
       'date': date.toIso8601String(),
+      'title': title,
       'weather': weather,
       'expenses': expenses.map((e) => e.toJson()).toList(),
       'notes': notes,
-      'photoUrls': photoUrls,
+      'photos': photos.map((e) => e.toJson()).toList(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -48,14 +51,24 @@ class DiaryEntry {
       id: json['id'] as String,
       travelPlanId: json['travelPlanId'] as String,
       date: DateTime.parse(json['date'] as String),
+      title: json['title'] as String? ?? '', // 하위 호환성
       weather: json['weather'] as String,
       expenses: (json['expenses'] as List<dynamic>)
           .map((e) => DiaryExpense.fromJson(e as Map<String, dynamic>))
           .toList(),
       notes: json['notes'] as String?,
-      photoUrls: (json['photoUrls'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
+      photos: json['photos'] != null
+          ? (json['photos'] as List<dynamic>)
+              .map((e) => DiaryPhoto.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : (json['photoUrls'] as List<dynamic>?) // 하위 호환성
+                  ?.map((e) => DiaryPhoto(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        url: e as String,
+                        description: null,
+                      ))
+                  .toList() ??
+              [],
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -66,10 +79,11 @@ class DiaryEntry {
     String? id,
     String? travelPlanId,
     DateTime? date,
+    String? title,
     String? weather,
     List<DiaryExpense>? expenses,
     String? notes,
-    List<String>? photoUrls,
+    List<DiaryPhoto>? photos,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -77,12 +91,57 @@ class DiaryEntry {
       id: id ?? this.id,
       travelPlanId: travelPlanId ?? this.travelPlanId,
       date: date ?? this.date,
+      title: title ?? this.title,
       weather: weather ?? this.weather,
       expenses: expenses ?? this.expenses,
       notes: notes ?? this.notes,
-      photoUrls: photoUrls ?? this.photoUrls,
+      photos: photos ?? this.photos,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+/// 다이어리 사진 모델
+class DiaryPhoto {
+  final String id;
+  final String url; // 이미지 경로 또는 URL
+  final String? description; // 이미지 설명
+
+  DiaryPhoto({
+    required this.id,
+    required this.url,
+    this.description,
+  });
+
+  /// JSON으로 변환
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+      'description': description,
+    };
+  }
+
+  /// JSON에서 생성
+  factory DiaryPhoto.fromJson(Map<String, dynamic> json) {
+    return DiaryPhoto(
+      id: json['id'] as String,
+      url: json['url'] as String,
+      description: json['description'] as String?,
+    );
+  }
+
+  /// copyWith 메서드
+  DiaryPhoto copyWith({
+    String? id,
+    String? url,
+    String? description,
+  }) {
+    return DiaryPhoto(
+      id: id ?? this.id,
+      url: url ?? this.url,
+      description: description ?? this.description,
     );
   }
 }
@@ -90,9 +149,9 @@ class DiaryEntry {
 /// 다이어리 가계부 항목 모델
 class DiaryExpense {
   final String id;
-  final String activityName;
-  final int amount;
-  final String? category; // food, transport, shopping, etc.
+  final String activityName; // 품목
+  final int amount; // 비용
+  final String? category; // 카테고리 (선택)
 
   DiaryExpense({
     required this.id,
