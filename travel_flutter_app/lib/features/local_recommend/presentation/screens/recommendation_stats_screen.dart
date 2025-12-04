@@ -282,11 +282,11 @@ class _RecommendationStatsScreenState extends ConsumerState<RecommendationStatsS
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Row(
+            const Row(
               children: [
-                const Expanded(flex: 2, child: Text('액션', style: TextStyle(fontWeight: FontWeight.bold))),
-                const Expanded(child: Text('횟수', style: TextStyle(fontWeight: FontWeight.bold))),
-                const Expanded(child: Text('비율', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(flex: 2, child: Text('액션', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(child: Text('횟수', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(child: Text('비율', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
             const Divider(),

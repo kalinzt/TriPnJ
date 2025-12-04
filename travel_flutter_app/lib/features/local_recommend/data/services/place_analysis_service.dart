@@ -7,7 +7,6 @@ import '../../../../shared/models/place_category.dart';
 import '../../../explore/data/repositories/places_repository.dart';
 import '../../domain/algorithms/recommendation_algorithm.dart';
 import '../models/cached_recommendation.dart';
-import '../models/user_preference.dart';
 import '../repositories/user_preference_repository.dart';
 import 'api_rate_limiter.dart';
 

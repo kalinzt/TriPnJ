@@ -216,7 +216,7 @@ class _EnhancedRecommendationCardState
                   // 주소
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on_outlined,
                         size: 14,
                         color: AppColors.textSecondary,
@@ -242,7 +242,7 @@ class _EnhancedRecommendationCardState
                     children: [
                       // 거리
                       if (_distanceInMeters != null) ...[
-                        Icon(
+                        const Icon(
                           Icons.directions_walk,
                           size: 14,
                           color: AppColors.textSecondary,

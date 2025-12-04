@@ -64,14 +64,14 @@ class _ExploreSearchBarState extends State<ExploreSearchBar> {
           hintStyle: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textHint,
           ),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.search,
             color: AppColors.primary,
             size: 24,
           ),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.clear,
                     color: AppColors.textSecondary,
                     size: 20,

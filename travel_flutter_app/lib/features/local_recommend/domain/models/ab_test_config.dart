@@ -227,7 +227,7 @@ class DefaultABTestConfigs {
           allocationRatio: 0.5,
         ),
         // 변형: 카테고리 다양성 강화
-        ABTestVariant(
+        const ABTestVariant(
           variantId: 'variant_diversity',
           variantName: '변형 (다양성 강화)',
           allocationRatio: 0.5,

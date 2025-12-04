@@ -230,7 +230,7 @@ class _RecommendationCardState extends ConsumerState<RecommendationCard> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.stars_rounded,
             size: 14,
             color: AppColors.primary,
@@ -329,7 +329,7 @@ class _RecommendationCardState extends ConsumerState<RecommendationCard> {
   Widget _buildFeedbackButtons() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         border: Border(
           top: BorderSide(
             color: AppColors.border,

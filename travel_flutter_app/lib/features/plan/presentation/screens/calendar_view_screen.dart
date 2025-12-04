@@ -75,13 +75,13 @@ class CalendarViewScreen extends ConsumerWidget {
     Map<DateTime, List<TripPlan>> eventsMap,
   ) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -372,11 +372,11 @@ class CalendarViewScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 4,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -416,7 +416,7 @@ class CalendarViewScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.location_on,
                                 size: 14,
                                 color: AppColors.textSecondary,
@@ -443,7 +443,7 @@ class CalendarViewScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.calendar_today,
                       size: 14,
                       color: AppColors.textHint,
@@ -589,7 +589,7 @@ class CalendarViewScreen extends ConsumerWidget {
                       Row(
                         children: [
                           if (activityWithTrip.timeRange != null) ...[
-                            Icon(
+                            const Icon(
                               Icons.access_time,
                               size: 12,
                               color: AppColors.textHint,
@@ -620,7 +620,7 @@ class CalendarViewScreen extends ConsumerWidget {
                 ),
 
                 // 화살표 아이콘
-                Icon(
+                const Icon(
                   Icons.chevron_right,
                   color: AppColors.textHint,
                   size: 20,

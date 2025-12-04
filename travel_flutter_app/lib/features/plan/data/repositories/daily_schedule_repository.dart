@@ -45,7 +45,7 @@ class DailyScheduleRepository {
       for (var entry in box.values) {
         try {
           final schedule =
-              DailySchedule.fromJson(Map<String, dynamic>.from(entry as Map));
+              DailySchedule.fromJson(Map<String, dynamic>.from(entry));
           if (schedule.travelPlanId == travelPlanId) {
             schedules.add(schedule);
           }
@@ -77,7 +77,7 @@ class DailyScheduleRepository {
 
       if (data == null) return null;
 
-      return DailySchedule.fromJson(Map<String, dynamic>.from(data as Map));
+      return DailySchedule.fromJson(Map<String, dynamic>.from(data));
     } catch (e) {
       appLogger.d('DailyScheduleRepository 에러: $e');
       return null;
@@ -124,7 +124,7 @@ class DailyScheduleRepository {
           final activityData = activityBox.get(key);
           if (activityData != null) {
             final activity =
-                Activity.fromJson(Map<String, dynamic>.from(activityData as Map));
+                Activity.fromJson(Map<String, dynamic>.from(activityData));
             if (activity.dailyScheduleId == dailyScheduleId) {
               keysToDelete.add(key.toString());
             }

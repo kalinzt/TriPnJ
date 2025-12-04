@@ -17,13 +17,13 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.home,
               size: 80,
               color: AppColors.primary,
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               '홈',
               style: AppTextStyles.headlineMedium,
             ),

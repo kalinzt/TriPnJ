@@ -25,13 +25,13 @@ class AccommodationScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.hotel,
               size: 80,
               color: AppColors.categoryRelax,
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               '숙박',
               style: AppTextStyles.headlineMedium,
             ),

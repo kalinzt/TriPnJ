@@ -117,7 +117,7 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen> {
                   top: 8,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
@@ -222,7 +222,7 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
               color: AppColors.error,
@@ -339,7 +339,7 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen> {
           label: const Text('더 보기'),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.primary,
-            side: BorderSide(color: AppColors.primary),
+            side: const BorderSide(color: AppColors.primary),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
         ),

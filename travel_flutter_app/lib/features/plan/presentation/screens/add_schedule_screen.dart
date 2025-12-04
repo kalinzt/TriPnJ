@@ -370,7 +370,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
             // 스케줄 타입
             DropdownButtonFormField<String>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: const InputDecoration(
                 labelText: '스케줄 타입',
                 border: OutlineInputBorder(),
@@ -428,7 +428,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
             // 이동 수단 모드 선택
             DropdownButtonFormField<TravelMode>(
-              value: _selectedTravelMode,
+              initialValue: _selectedTravelMode,
               decoration: const InputDecoration(
                 labelText: '이동 수단',
                 border: OutlineInputBorder(),

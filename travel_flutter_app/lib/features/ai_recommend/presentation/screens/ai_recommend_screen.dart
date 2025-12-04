@@ -19,7 +19,7 @@ class AIRecommendScreen extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AppColors.oceanGradient,
                 shape: BoxShape.circle,
               ),
@@ -30,7 +30,7 @@ class AIRecommendScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               'AI 추천',
               style: AppTextStyles.headlineMedium,
             ),

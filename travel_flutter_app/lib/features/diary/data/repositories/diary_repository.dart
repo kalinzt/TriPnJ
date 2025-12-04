@@ -36,7 +36,7 @@ class DiaryRepository {
       for (var entry in box.values) {
         try {
           final diaryEntry = DiaryEntry.fromJson(
-            Map<String, dynamic>.from(entry as Map),
+            Map<String, dynamic>.from(entry),
           );
           if (diaryEntry.travelPlanId == travelPlanId) {
             entries.add(diaryEntry);
@@ -65,7 +65,7 @@ class DiaryRepository {
 
       if (data == null) return null;
 
-      return DiaryEntry.fromJson(Map<String, dynamic>.from(data as Map));
+      return DiaryEntry.fromJson(Map<String, dynamic>.from(data));
     } catch (e) {
       appLogger.e('DiaryEntry 조회 실패', error: e);
       return null;

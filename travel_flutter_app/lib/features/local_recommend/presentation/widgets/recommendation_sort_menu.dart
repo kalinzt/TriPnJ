@@ -54,7 +54,7 @@ class RecommendationSortMenu extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                Icon(
+                const Icon(
                   Icons.check,
                   size: 20,
                   color: AppColors.primary,

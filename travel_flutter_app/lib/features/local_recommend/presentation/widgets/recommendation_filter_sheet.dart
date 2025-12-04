@@ -400,7 +400,7 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
             ),
             Text(
               _minReviewCount > 0
-                  ? '${_minReviewCount}개 이상'
+                  ? '$_minReviewCount개 이상'
                   : '제한 없음',
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.primary,
@@ -415,7 +415,7 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
           max: 500,
           divisions: 10,
           label: _minReviewCount > 0
-              ? '${_minReviewCount}개'
+              ? '$_minReviewCount개'
               : '제한 없음',
           activeColor: AppColors.primary,
           onChanged: (value) {
@@ -481,7 +481,7 @@ class _RecommendationFilterSheetState extends State<RecommendationFilterSheet> {
               }
             },
           );
-        }).toList(),
+        }),
       ],
     );
   }
