@@ -584,23 +584,26 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_dailySchedules.isEmpty) {
-      return const Center(
-        child: Text(
-          '아직 일정이 없습니다.\n날짜를 선택하여 일정을 추가해보세요.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey),
-        ),
-      );
-    }
+    // 여행 계획의 전체 날짜 범위 가져오기
+    final allDates = _editedPlan.allDates;
 
     return RefreshIndicator(
       onRefresh: _loadSchedules,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _dailySchedules.length,
+        itemCount: allDates.length,
         itemBuilder: (context, index) {
-          final schedule = _dailySchedules[index];
+          final date = allDates[index];
+
+          // 해당 날짜의 DailySchedule 찾기
+          DailySchedule? schedule;
+          for (var s in _dailySchedules) {
+            if (_isSameDay(s.date, date)) {
+              schedule = s;
+              break;
+            }
+          }
+
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: Padding(
@@ -612,7 +615,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                   Row(
                     children: [
                       Text(
-                        '${schedule.date.year}년 ${schedule.date.month}월 ${schedule.date.day}일',
+                        '${date.year}년 ${date.month}월 ${date.day}일',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -620,7 +623,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                       ),
                       const Spacer(),
                       IconButton(
-                        onPressed: () => _addActivity(schedule.date),
+                        onPressed: () => _addActivity(date),
                         icon: const Icon(Icons.add),
                         tooltip: '일정 추가',
                       ),
@@ -629,7 +632,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                   const Divider(),
 
                   // 활동 목록
-                  if (schedule.activities.isEmpty)
+                  if (schedule == null || schedule.activities.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Text(
@@ -660,6 +663,11 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         },
       ),
     );
+  }
+
+  /// 같은 날짜인지 확인
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   /// Activity 타입별 아이콘
