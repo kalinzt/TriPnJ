@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'home_screen.dart';
-import '../../../explore/presentation/screens/explore_screen.dart';
 import '../../../plan/presentation/screens/plan_screen.dart';
-import '../../../accommodation/presentation/screens/accommodation_screen.dart';
+import '../../../diary/presentation/screens/diary_screen.dart';
 import '../../../local_recommend/presentation/screens/local_recommend_screen.dart';
 
 /// 메인 스크린 - 하단 네비게이션 바를 포함한 메인 컨테이너
@@ -21,9 +20,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   // 각 탭에 표시할 화면들
   final List<Widget> _screens = const [
     HomeScreen(),
-    ExploreScreen(),
     PlanScreen(),
-    AccommodationScreen(),
+    DiaryScreen(),
     LocalRecommendScreen(),
   ];
 
@@ -35,19 +33,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       label: '홈',
     ),
     NavigationItem(
-      icon: Icons.explore_outlined,
-      activeIcon: Icons.explore,
-      label: '탐색',
-    ),
-    NavigationItem(
       icon: Icons.event_note_outlined,
       activeIcon: Icons.event_note,
       label: '계획',
     ),
     NavigationItem(
-      icon: Icons.hotel_outlined,
-      activeIcon: Icons.hotel,
-      label: '숙박',
+      icon: Icons.book_outlined,
+      activeIcon: Icons.book,
+      label: '다이어리',
     ),
     NavigationItem(
       icon: Icons.recommend_outlined,
