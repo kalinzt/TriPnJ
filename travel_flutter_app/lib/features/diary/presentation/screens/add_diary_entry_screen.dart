@@ -44,24 +44,37 @@ class _AddDiaryEntryScreenState extends State<AddDiaryEntryScreen> {
     super.dispose();
   }
 
-  /// 이미지 추가
+  /// 이미지 추가 (다중 선택)
   Future<void> _addImage() async {
-    if (_photos.length >= 15) {
+    final remainingSlots = 15 - _photos.length;
+
+    if (remainingSlots <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('최대 15장까지만 추가할 수 있습니다')),
       );
       return;
     }
 
-    final imagePath = await _imageService.pickImageFromGallery();
-    if (imagePath != null) {
+    final imagePaths = await _imageService.pickMultipleImages(
+      maxImages: remainingSlots,
+    );
+
+    if (imagePaths.isNotEmpty) {
       setState(() {
-        _photos.add(DiaryPhoto(
-          id: _uuid.v4(),
-          url: imagePath,
-          description: null,
-        ));
+        for (final imagePath in imagePaths) {
+          _photos.add(DiaryPhoto(
+            id: _uuid.v4(),
+            url: imagePath,
+            description: null,
+          ));
+        }
       });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${imagePaths.length}장의 사진이 추가되었습니다')),
+        );
+      }
     }
   }
 

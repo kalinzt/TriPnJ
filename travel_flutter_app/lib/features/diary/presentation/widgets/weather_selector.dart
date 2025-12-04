@@ -51,21 +51,21 @@ class WeatherSelector extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 6,
+          runSpacing: 6,
           children: WeatherType.values.map((weather) {
             final isSelected = weather == selectedType;
             return InkWell(
               onTap: () => onWeatherSelected(weather.value),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               child: Container(
-                width: 90,
-                padding: const EdgeInsets.all(12),
+                width: 54,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? weather.color.withOpacity(0.2)
                       : Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected ? weather.color : Colors.grey[300]!,
                     width: isSelected ? 2 : 1,
@@ -76,13 +76,13 @@ class WeatherSelector extends StatelessWidget {
                     Icon(
                       weather.icon,
                       color: isSelected ? weather.color : Colors.grey[600],
-                      size: 32,
+                      size: 24,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       weather.label,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.normal,
                         color: isSelected ? weather.color : Colors.grey[700],
