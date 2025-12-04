@@ -7,7 +7,7 @@ import '../../data/repositories/daily_schedule_repository.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/services/directions_service.dart';
 import '../../../plan/data/models/route_option_model.dart';
-import '../widgets/route_map_view.dart';
+import '../widgets/route_info_card.dart';
 
 /// 스케줄 추가 화면
 class AddScheduleScreen extends StatefulWidget {
@@ -471,7 +471,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              RouteMapView(
+              RouteInfoCard(
                 route: _selectedRoute!,
                 onSelect: null, // 이미 선택된 경로이므로 선택 버튼 숨김
               ),
@@ -491,7 +491,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...(_routeOptions!.map((route) => RouteMapView(
+              ...(_routeOptions!.map((route) => RouteInfoCard(
                     route: route,
                     onSelect: () => _selectRoute(route),
                   ))),
