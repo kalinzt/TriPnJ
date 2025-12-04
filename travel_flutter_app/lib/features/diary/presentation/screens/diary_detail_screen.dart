@@ -6,6 +6,8 @@ import '../../../../core/utils/app_logger.dart';
 import '../../../plan/data/models/travel_plan_model.dart';
 import '../../data/models/diary_entry_model.dart';
 import '../../data/repositories/diary_repository.dart';
+import 'add_diary_entry_screen.dart';
+import 'edit_diary_entry_screen.dart';
 
 /// 여행 다이어리 상세 화면
 class DiaryDetailScreen extends StatefulWidget {
@@ -188,6 +190,28 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 타이틀과 수정 버튼
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  entry.title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => _editEntry(entry),
+                tooltip: '수정',
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
           // 날씨
           _buildWeatherSection(entry),
           const SizedBox(height: 24),
@@ -392,11 +416,35 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   /// 새 다이어리 생성
   Future<void> _createNewEntry() async {
-    // TODO: 다이어리 작성 화면으로 이동
-    appLogger.i('다이어리 작성 화면 구현 예정');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('다이어리 작성 기능은 추후 구현 예정입니다')),
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddDiaryEntryScreen(
+          travelPlanId: widget.plan.id,
+          date: _selectedDate,
+        ),
+      ),
     );
+
+    if (result == true) {
+      // 다이어리가 추가되었으면 목록 새로고침
+      _loadDiaryEntries();
+    }
+  }
+
+  /// 다이어리 수정
+  Future<void> _editEntry(DiaryEntry entry) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditDiaryEntryScreen(entry: entry),
+      ),
+    );
+
+    if (result == true) {
+      // 다이어리가 수정되었으면 목록 새로고침
+      _loadDiaryEntries();
+    }
   }
 
   /// 날씨 아이콘
