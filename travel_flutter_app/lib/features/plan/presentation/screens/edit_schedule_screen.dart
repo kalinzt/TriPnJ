@@ -5,6 +5,7 @@ import '../../data/repositories/daily_schedule_repository.dart';
 import '../../../../core/services/directions_service.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../plan/data/models/route_option_model.dart';
+import '../widgets/route_info_card.dart';
 
 /// 스케줄 편집 화면
 class EditScheduleScreen extends StatefulWidget {
@@ -50,6 +51,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
   // 경로 검색 상태
   bool _isSearching = false;
   List<RouteOption>? _routeOptions;
+  RouteOption? _selectedRoute;
 
   @override
   void initState() {
@@ -71,6 +73,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     _startTime = TimeOfDay.fromDateTime(widget.activity.startTime);
     _endTime = TimeOfDay.fromDateTime(widget.activity.endTime);
     _selectedType = widget.activity.type;
+    _selectedRoute = widget.activity.selectedRoute; // 저장된 경로 로드
   }
 
   @override
@@ -133,6 +136,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     setState(() {
       _isSearching = true;
       _routeOptions = null;
+      _selectedRoute = null;
     });
 
     appLogger.i('경로 검색 시작: $departure → $arrival (${_selectedTravelMode.name})');
@@ -176,6 +180,8 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
   /// 경로 옵션 선택
   void _selectRoute(RouteOption route) {
     setState(() {
+      _selectedRoute = route;
+
       // 교통편 자동 채우기
       _transportationController.text = route.vehicleInfo ?? '';
 
@@ -192,11 +198,6 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
           startDateTime.add(Duration(minutes: route.durationMinutes));
 
       _endTime = TimeOfDay(hour: endDateTime.hour, minute: endDateTime.minute);
-
-      // 비고에 상세 정보 추가
-      if (route.details != null) {
-        _notesController.text = route.details!;
-      }
     });
 
     appLogger.i('경로 선택: ${route.routeId}, 소요 시간: ${route.durationMinutes}분');
@@ -260,6 +261,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
+        selectedRoute: _selectedRoute, // 선택된 경로 저장
       );
 
       await _activityRepository.updateActivity(updatedActivity);
@@ -392,6 +394,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
               ),
               items: const [
                 DropdownMenuItem(value: 'flight', child: Text('비행')),
+                DropdownMenuItem(value: 'transportation', child: Text('교통')),
                 DropdownMenuItem(value: 'accommodation', child: Text('숙소')),
                 DropdownMenuItem(value: 'tour', child: Text('관광')),
                 DropdownMenuItem(value: 'restaurant', child: Text('식당')),
@@ -480,25 +483,35 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
             const SizedBox(height: 16),
 
             // 경로 검색 결과
-            if (_routeOptions != null && _routeOptions!.isNotEmpty) ...[
+            if (_selectedRoute != null) ...[
+              const Text(
+                '선택된 경로',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              RouteInfoCard(
+                route: _selectedRoute!,
+                onSelect: null, // 이미 선택된 경로이므로 선택 버튼 숨김
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _selectedRoute = null;
+                  });
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('다른 경로 선택'),
+              ),
+              const SizedBox(height: 16),
+            ] else if (_routeOptions != null && _routeOptions!.isNotEmpty) ...[
               const Text(
                 '경로 옵션',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...(_routeOptions!.map((route) => Card(
-                    child: ListTile(
-                      title: Text(route.vehicleInfo ?? '정보 없음'),
-                      subtitle: Text(
-                        '소요 시간: ${route.durationMinutes}분\n'
-                        '거리: ${route.distance}\n'
-                        '${route.details ?? ""}',
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () => _selectRoute(route),
-                        child: const Text('선택'),
-                      ),
-                    ),
+              ...(_routeOptions!.map((route) => RouteInfoCard(
+                    route: route,
+                    onSelect: () => _selectRoute(route),
                   ))),
               const SizedBox(height: 16),
             ],

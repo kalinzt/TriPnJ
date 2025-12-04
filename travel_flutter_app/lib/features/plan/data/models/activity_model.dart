@@ -1,3 +1,5 @@
+import '../../../plan/data/models/route_option_model.dart';
+
 /// 여행 활동(스케줄) 모델
 class Activity {
   /// 고유 ID (UUID)
@@ -6,7 +8,7 @@ class Activity {
   /// 부모 DailySchedule의 ID
   final String dailyScheduleId;
 
-  /// 스케줄 타입 (flight: 비행, accommodation: 숙소, tour: 관광, restaurant: 식당, activity: 액티비티)
+  /// 스케줄 타입 (flight: 비행, transportation: 교통, accommodation: 숙소, tour: 관광, restaurant: 식당, activity: 액티비티)
   final String type;
 
   /// 스케줄 제목 (예: "비행", "숙소 체크인")
@@ -36,6 +38,9 @@ class Activity {
   /// 표시 순서 (시간 순서대로 정렬하기 위한 순서)
   final int displayOrder;
 
+  /// 선택된 경로 정보 (선택)
+  final RouteOption? selectedRoute;
+
   const Activity({
     required this.id,
     required this.dailyScheduleId,
@@ -49,6 +54,7 @@ class Activity {
     this.cost,
     this.notes,
     required this.displayOrder,
+    this.selectedRoute,
   });
 
   /// JSON으로 변환
@@ -66,6 +72,7 @@ class Activity {
       'cost': cost,
       'notes': notes,
       'displayOrder': displayOrder,
+      'selectedRoute': selectedRoute?.toJson(),
     };
   }
 
@@ -84,6 +91,9 @@ class Activity {
       cost: json['cost'] as String?,
       notes: json['notes'] as String?,
       displayOrder: json['displayOrder'] as int,
+      selectedRoute: json['selectedRoute'] != null
+          ? RouteOption.fromJson(json['selectedRoute'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -101,6 +111,7 @@ class Activity {
     String? cost,
     String? notes,
     int? displayOrder,
+    RouteOption? selectedRoute,
   }) {
     return Activity(
       id: id ?? this.id,
@@ -115,6 +126,7 @@ class Activity {
       cost: cost ?? this.cost,
       notes: notes ?? this.notes,
       displayOrder: displayOrder ?? this.displayOrder,
+      selectedRoute: selectedRoute ?? this.selectedRoute,
     );
   }
 
@@ -124,7 +136,7 @@ class Activity {
         'title: $title, startTime: $startTime, endTime: $endTime, '
         'departureLocation: $departureLocation, arrivalLocation: $arrivalLocation, '
         'transportation: $transportation, cost: $cost, notes: $notes, '
-        'displayOrder: $displayOrder)';
+        'displayOrder: $displayOrder, selectedRoute: $selectedRoute)';
   }
 
   @override
@@ -143,7 +155,8 @@ class Activity {
         other.transportation == transportation &&
         other.cost == cost &&
         other.notes == notes &&
-        other.displayOrder == displayOrder;
+        other.displayOrder == displayOrder &&
+        other.selectedRoute == selectedRoute;
   }
 
   @override
@@ -161,6 +174,7 @@ class Activity {
       cost,
       notes,
       displayOrder,
+      selectedRoute,
     );
   }
 }

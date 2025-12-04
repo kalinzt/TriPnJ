@@ -295,6 +295,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             ? null
             : _notesController.text.trim(),
         displayOrder: 0, // 자동으로 재계산됨
+        selectedRoute: _selectedRoute, // 선택된 경로 저장
       );
 
       await _activityRepository.addActivity(activity);
@@ -377,6 +378,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
               ),
               items: const [
                 DropdownMenuItem(value: 'flight', child: Text('비행')),
+                DropdownMenuItem(value: 'transportation', child: Text('교통')),
                 DropdownMenuItem(value: 'accommodation', child: Text('숙소')),
                 DropdownMenuItem(value: 'tour', child: Text('관광')),
                 DropdownMenuItem(value: 'restaurant', child: Text('식당')),
