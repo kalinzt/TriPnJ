@@ -92,20 +92,18 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
           await _dailyScheduleRepository.getDailySchedules(widget.plan.id);
 
       // 각 스케줄의 activities 로드
+      final updatedSchedules = <DailySchedule>[];
       for (var schedule in schedules) {
         final activities =
             await _activityRepository.getActivitiesByDate(schedule.id);
         // activities를 schedule에 포함
-        schedule = schedule.copyWith(activities: activities);
-        final index = schedules.indexOf(schedule);
-        if (index != -1) {
-          schedules[index] = schedule;
-        }
+        final updatedSchedule = schedule.copyWith(activities: activities);
+        updatedSchedules.add(updatedSchedule);
       }
 
       if (mounted) {
         setState(() {
-          _dailySchedules = schedules;
+          _dailySchedules = updatedSchedules;
           _isLoadingSchedules = false;
         });
       }
