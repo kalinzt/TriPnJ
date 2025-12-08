@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../plan/data/models/travel_plan_model.dart';
@@ -32,11 +33,14 @@ class DiaryScreen extends ConsumerWidget {
 
   /// 여행 계획 목록
   Widget _buildPlanList(BuildContext context, List<TravelPlan> plans) {
+    // 시작날짜가 오늘과 가까운 순으로 정렬
+    final sortedPlans = _sortPlansByProximity(plans);
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: plans.length,
+      itemCount: sortedPlans.length,
       itemBuilder: (context, index) {
-        final plan = plans[index];
+        final plan = sortedPlans[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
@@ -53,7 +57,7 @@ class DiaryScreen extends ConsumerWidget {
               style: AppTextStyles.titleMedium,
             ),
             subtitle: Text(
-              '${plan.destination} · ${plan.duration}일',
+              _formatDateRange(plan),
               style: AppTextStyles.bodySmall,
             ),
             trailing: const Icon(Icons.chevron_right),
@@ -69,6 +73,35 @@ class DiaryScreen extends ConsumerWidget {
         );
       },
     );
+  }
+
+  /// 시작날짜가 오늘과 가까운 순으로 정렬
+  List<TravelPlan> _sortPlansByProximity(List<TravelPlan> plans) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final sortedList = List<TravelPlan>.from(plans);
+    sortedList.sort((a, b) {
+      final aStart = DateTime(a.startDate.year, a.startDate.month, a.startDate.day);
+      final bStart = DateTime(b.startDate.year, b.startDate.month, b.startDate.day);
+
+      // 오늘과의 거리 계산
+      final aDiff = (aStart.difference(today).inDays).abs();
+      final bDiff = (bStart.difference(today).inDays).abs();
+
+      return aDiff.compareTo(bDiff);
+    });
+
+    return sortedList;
+  }
+
+  /// 날짜 범위 포맷: yy.mm.dd ~ yy.mm.dd (n일)
+  String _formatDateRange(TravelPlan plan) {
+    final dateFormat = DateFormat('yy.MM.dd');
+    final startStr = dateFormat.format(plan.startDate);
+    final endStr = dateFormat.format(plan.endDate);
+
+    return '$startStr ~ $endStr (${plan.duration}일)';
   }
 
   /// 빈 상태 뷰
