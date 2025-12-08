@@ -518,11 +518,11 @@ class _AddDiaryEntryScreenState extends State<AddDiaryEntryScreen> {
               ],
               const SizedBox(height: 24),
 
-              // 비고
+              // 일과 작성
               TextFormField(
                 controller: _notesController,
                 decoration: const InputDecoration(
-                  labelText: '비고',
+                  labelText: '일과 작성',
                   hintText: '오늘의 일과를 작성해보세요.',
                   border: OutlineInputBorder(),
                 ),
