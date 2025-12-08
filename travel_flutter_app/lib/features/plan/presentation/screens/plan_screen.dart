@@ -239,7 +239,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen>
     );
 
     if (result == true) {
-      // 추가 성공 시 목록 새로고침은 Provider에서 자동으로 처리됨
+      // 추가 성공 시 목록 새로고침
+      ref.invalidate(plannedAndOngoingTravelsProvider);
+      ref.invalidate(completedTravelsProvider);
     }
   }
 
