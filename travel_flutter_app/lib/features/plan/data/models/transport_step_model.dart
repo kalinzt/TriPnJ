@@ -36,12 +36,15 @@ class TransportStep {
 
   /// JSON에서 생성
   factory TransportStep.fromJson(Map<String, dynamic> json) {
+    // Map<dynamic, dynamic>을 Map<String, dynamic>으로 안전하게 변환
+    final safeJson = Map<String, dynamic>.from(json);
+
     return TransportStep(
-      stepId: json['stepId'] as String,
-      icon: json['icon'] as String?,
-      name: json['name'] as String,
-      duration: json['duration'] as String,
-      type: json['type'] as String,
+      stepId: safeJson['stepId'] as String,
+      icon: safeJson['icon'] as String?,
+      name: safeJson['name'] as String,
+      duration: safeJson['duration'] as String,
+      type: safeJson['type'] as String,
     );
   }
 

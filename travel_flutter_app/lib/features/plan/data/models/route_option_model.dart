@@ -37,12 +37,15 @@ class RouteCoordinates {
   }
 
   factory RouteCoordinates.fromJson(Map<String, dynamic> json) {
+    // Map<dynamic, dynamic>을 Map<String, dynamic>으로 안전하게 변환
+    final safeJson = Map<String, dynamic>.from(json);
+
     return RouteCoordinates(
-      startLatitude: json['startLatitude'] as double,
-      startLongitude: json['startLongitude'] as double,
-      endLatitude: json['endLatitude'] as double,
-      endLongitude: json['endLongitude'] as double,
-      waypoints: (json['waypoints'] as List<dynamic>?)
+      startLatitude: safeJson['startLatitude'] as double,
+      startLongitude: safeJson['startLongitude'] as double,
+      endLatitude: safeJson['endLatitude'] as double,
+      endLongitude: safeJson['endLongitude'] as double,
+      waypoints: (safeJson['waypoints'] as List<dynamic>?)
               ?.map((e) => Map<String, double>.from(e as Map))
               .toList() ??
           const [],
@@ -128,26 +131,31 @@ class RouteOption {
 
   /// JSON에서 생성
   factory RouteOption.fromJson(Map<String, dynamic> json) {
+    // Map<dynamic, dynamic>을 Map<String, dynamic>으로 안전하게 변환
+    final safeJson = Map<String, dynamic>.from(json);
+
     return RouteOption(
-      routeId: json['routeId'] as String,
-      transportMode: json['transportMode'] as String,
-      vehicleInfo: json['vehicleInfo'] as String?,
-      durationMinutes: json['durationMinutes'] as int,
-      distance: json['distance'] as String,
-      details: json['details'] as String?,
-      coordinates: json['coordinates'] != null
-          ? RouteCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>)
+      routeId: safeJson['routeId'] as String,
+      transportMode: safeJson['transportMode'] as String,
+      vehicleInfo: safeJson['vehicleInfo'] as String?,
+      durationMinutes: safeJson['durationMinutes'] as int,
+      distance: safeJson['distance'] as String,
+      details: safeJson['details'] as String?,
+      coordinates: safeJson['coordinates'] != null
+          ? RouteCoordinates.fromJson(
+              Map<String, dynamic>.from(safeJson['coordinates'] as Map))
           : null,
-      departureLocation: json['departureLocation'] as String?,
-      arrivalLocation: json['arrivalLocation'] as String?,
-      transportOptions: json['transportOptions'] != null
-          ? (json['transportOptions'] as List<dynamic>)
-              .map((step) => TransportStep.fromJson(step as Map<String, dynamic>))
+      departureLocation: safeJson['departureLocation'] as String?,
+      arrivalLocation: safeJson['arrivalLocation'] as String?,
+      transportOptions: safeJson['transportOptions'] != null
+          ? (safeJson['transportOptions'] as List<dynamic>)
+              .map((step) => TransportStep.fromJson(
+                  Map<String, dynamic>.from(step as Map)))
               .toList()
           : null,
-      estimatedArrivalTime: json['estimatedArrivalTime'] as String?,
-      delayedArrivalTime: json['delayedArrivalTime'] as String?,
-      departureNote: json['departureNote'] as String?,
+      estimatedArrivalTime: safeJson['estimatedArrivalTime'] as String?,
+      delayedArrivalTime: safeJson['delayedArrivalTime'] as String?,
+      departureNote: safeJson['departureNote'] as String?,
     );
   }
 

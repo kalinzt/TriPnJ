@@ -78,21 +78,25 @@ class Activity {
 
   /// JSON에서 생성
   factory Activity.fromJson(Map<String, dynamic> json) {
+    // Map<dynamic, dynamic>을 Map<String, dynamic>으로 안전하게 변환
+    final safeJson = Map<String, dynamic>.from(json);
+
     return Activity(
-      id: json['id'] as String,
-      dailyScheduleId: json['dailyScheduleId'] as String,
-      type: json['type'] as String,
-      title: json['title'] as String,
-      startTime: DateTime.parse(json['startTime'] as String),
-      endTime: DateTime.parse(json['endTime'] as String),
-      departureLocation: json['departureLocation'] as String?,
-      arrivalLocation: json['arrivalLocation'] as String?,
-      transportation: json['transportation'] as String?,
-      cost: json['cost'] as String?,
-      notes: json['notes'] as String?,
-      displayOrder: json['displayOrder'] as int,
-      selectedRoute: json['selectedRoute'] != null
-          ? RouteOption.fromJson(json['selectedRoute'] as Map<String, dynamic>)
+      id: safeJson['id'] as String,
+      dailyScheduleId: safeJson['dailyScheduleId'] as String,
+      type: safeJson['type'] as String,
+      title: safeJson['title'] as String,
+      startTime: DateTime.parse(safeJson['startTime'] as String),
+      endTime: DateTime.parse(safeJson['endTime'] as String),
+      departureLocation: safeJson['departureLocation'] as String?,
+      arrivalLocation: safeJson['arrivalLocation'] as String?,
+      transportation: safeJson['transportation'] as String?,
+      cost: safeJson['cost'] as String?,
+      notes: safeJson['notes'] as String?,
+      displayOrder: safeJson['displayOrder'] as int,
+      selectedRoute: safeJson['selectedRoute'] != null
+          ? RouteOption.fromJson(
+              Map<String, dynamic>.from(safeJson['selectedRoute'] as Map))
           : null,
     );
   }
