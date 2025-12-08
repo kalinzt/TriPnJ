@@ -130,11 +130,15 @@ class TravelPlan extends HiveObject {
     final start = DateTime(startDate.year, startDate.month, startDate.day);
     final end = DateTime(endDate.year, endDate.month, endDate.day);
 
+    // 날짜 비교를 통한 상태 자동 결정
     if (today.isBefore(start)) {
+      // 오늘 < 시작일 → 예정된 여행
       status = 'planned';
     } else if (today.isAfter(end)) {
+      // 오늘 > 종료일 → 완료된 여행
       status = 'completed';
     } else {
+      // 시작일 ≤ 오늘 ≤ 종료일 → 진행 중인 여행
       status = 'inProgress';
     }
   }

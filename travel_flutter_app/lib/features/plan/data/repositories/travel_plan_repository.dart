@@ -51,6 +51,8 @@ class TravelPlanRepository {
   }) async {
     try {
       Logger.info('여행 계획 생성: $name', 'TravelPlanRepository');
+      Logger.info('  - 시작일: ${startDate.year}-${startDate.month}-${startDate.day}', 'TravelPlanRepository');
+      Logger.info('  - 종료일: ${endDate.year}-${endDate.month}-${endDate.day}', 'TravelPlanRepository');
 
       final box = await _getBox();
       final now = DateTime.now();
@@ -63,13 +65,24 @@ class TravelPlanRepository {
         endDate: endDate,
         budget: budget,
         description: description,
-        status: 'planned',
+        status: 'planned', // 초기값: 날짜 기반으로 자동 업데이트됨
         createdAt: now,
         updatedAt: now,
       );
 
       // 날짜 기반 상태 자동 업데이트
+      final beforeStatus = travelPlan.status;
       travelPlan.updateStatusBasedOnDate();
+      final afterStatus = travelPlan.status;
+
+      Logger.info('  - 상태 자동 설정: $beforeStatus → $afterStatus', 'TravelPlanRepository');
+      if (afterStatus == 'planned') {
+        Logger.info('    → 예정된 여행 (시작일이 미래)', 'TravelPlanRepository');
+      } else if (afterStatus == 'inProgress') {
+        Logger.info('    → 진행 중인 여행 (여행 기간 중)', 'TravelPlanRepository');
+      } else if (afterStatus == 'completed') {
+        Logger.info('    → 완료된 여행 (종료일이 과거)', 'TravelPlanRepository');
+      }
 
       await box.put(travelPlan.id, travelPlan);
 
