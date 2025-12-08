@@ -197,6 +197,89 @@ class TravelPlanRepository {
     }
   }
 
+  /// 예정/진행 중인 여행 계획 조회 (오늘과 가까운 순 정렬)
+  Future<List<TravelPlan>> getPlannedAndOngoingTravels() async {
+    try {
+      Logger.info('예정/진행 중인 여행 계획 조회', 'TravelPlanRepository');
+
+      final box = await _getBox();
+
+      // 오늘 날짜 (시간 제거)
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      // 상태 업데이트 후 'planned' 또는 'inProgress' 필터링
+      final plans = box.values.where((plan) {
+        plan.updateStatusBasedOnDate();
+        return plan.status == 'planned' || plan.status == 'inProgress';
+      }).toList();
+
+      // 시작날짜가 오늘과 가까운 순으로 정렬
+      plans.sort((a, b) {
+        // 날짜만 비교하기 위해 시간 제거
+        final aStart = DateTime(a.startDate.year, a.startDate.month, a.startDate.day);
+        final bStart = DateTime(b.startDate.year, b.startDate.month, b.startDate.day);
+
+        // 진행 중인 여행 (startDate < today < endDate)을 최우선
+        final aIsOngoing = a.status == 'inProgress';
+        final bIsOngoing = b.status == 'inProgress';
+
+        if (aIsOngoing && !bIsOngoing) return -1; // a가 진행 중이면 a를 앞으로
+        if (!aIsOngoing && bIsOngoing) return 1;  // b가 진행 중이면 b를 앞으로
+
+        // 둘 다 진행 중이거나 둘 다 예정인 경우, 오늘과의 거리로 정렬
+        final aDiff = (aStart.difference(today).inDays).abs();
+        final bDiff = (bStart.difference(today).inDays).abs();
+
+        return aDiff.compareTo(bDiff);
+      });
+
+      Logger.info('조회된 \'예정/진행\' 여행 수: ${plans.length}', 'TravelPlanRepository');
+      return plans;
+    } catch (e, stackTrace) {
+      Logger.error('예정/진행 중인 여행 조회 실패', e, stackTrace, 'TravelPlanRepository');
+      return [];
+    }
+  }
+
+  /// 완료된 여행 계획 조회 (오늘과 가까운 순 정렬)
+  Future<List<TravelPlan>> getCompletedTravels() async {
+    try {
+      Logger.info('완료된 여행 계획 조회', 'TravelPlanRepository');
+
+      final box = await _getBox();
+
+      // 오늘 날짜 (시간 제거)
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      // 상태 업데이트 후 'completed' 필터링
+      final plans = box.values.where((plan) {
+        plan.updateStatusBasedOnDate();
+        return plan.status == 'completed';
+      }).toList();
+
+      // 종료날짜가 오늘과 가까운 순으로 정렬
+      plans.sort((a, b) {
+        // 날짜만 비교하기 위해 시간 제거
+        final aEnd = DateTime(a.endDate.year, a.endDate.month, a.endDate.day);
+        final bEnd = DateTime(b.endDate.year, b.endDate.month, b.endDate.day);
+
+        // 오늘과의 거리 계산
+        final aDiff = (aEnd.difference(today).inDays).abs();
+        final bDiff = (bEnd.difference(today).inDays).abs();
+
+        return aDiff.compareTo(bDiff);
+      });
+
+      Logger.info('조회된 \'완료\' 여행 수: ${plans.length}', 'TravelPlanRepository');
+      return plans;
+    } catch (e, stackTrace) {
+      Logger.error('완료된 여행 조회 실패', e, stackTrace, 'TravelPlanRepository');
+      return [];
+    }
+  }
+
   // ============================================
   // UPDATE - 여행 계획 수정
   // ============================================
