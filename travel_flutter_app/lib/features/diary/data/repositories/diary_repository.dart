@@ -37,8 +37,8 @@ class DiaryRepository {
 
       appLogger.d('마이그레이션 시작: $_oldBoxName -> $_boxName');
 
-      // 기존 Box<Map> 열기
-      final oldBox = await Hive.openBox<Map>(_oldBoxName);
+      // 타입을 지정하지 않고 안전하게 열기 (이미 마이그레이션된 경우 대비)
+      final oldBox = await Hive.openBox(_oldBoxName);
 
       if (oldBox.isEmpty) {
         appLogger.d('마이그레이션: 기존 box가 비어있음');
@@ -49,37 +49,56 @@ class DiaryRepository {
 
       int successCount = 0;
       int failCount = 0;
+      int skipCount = 0;
 
       // 각 항목을 마이그레이션
-      for (var entry in oldBox.toMap().entries) {
+      for (var key in oldBox.keys) {
         try {
-          final key = entry.key as String;
-          final value = entry.value;
+          final value = oldBox.get(key);
 
-          // Map을 DiaryEntry로 파싱
-          final diaryEntry = DiaryEntry.fromJson(
-            Map<String, dynamic>.from(value),
-          );
+          // 이미 String으로 저장된 경우 (마이그레이션 완료) 건너뛰기
+          if (value is String) {
+            skipCount++;
+            appLogger.d('이미 마이그레이션됨: $key (String 타입)');
+            continue;
+          }
 
-          // String으로 인코딩하여 새 box에 저장
-          final jsonString = _encodeDiaryEntry(diaryEntry);
-          await _box!.put(key, jsonString);
+          // Map 타입인 경우에만 마이그레이션
+          if (value is Map) {
+            // Map을 DiaryEntry로 파싱
+            final diaryEntry = DiaryEntry.fromJson(
+              Map<String, dynamic>.from(value),
+            );
 
-          successCount++;
-          appLogger.d('마이그레이션 성공: ${diaryEntry.id}');
+            // String으로 인코딩하여 새 box에 저장
+            final jsonString = _encodeDiaryEntry(diaryEntry);
+            await _box!.put(key as String, jsonString);
+
+            successCount++;
+            appLogger.d('마이그레이션 성공: ${diaryEntry.id}');
+          } else {
+            failCount++;
+            appLogger.e('알 수 없는 타입: $key (${value.runtimeType})');
+          }
         } catch (e) {
           failCount++;
-          appLogger.e('마이그레이션 실패: ${entry.key}', error: e);
+          appLogger.e('마이그레이션 실패: $key', error: e);
         }
       }
 
-      appLogger.d('마이그레이션 완료: 성공 $successCount개, 실패 $failCount개');
+      appLogger.d(
+        '마이그레이션 완료: 성공 $successCount개, 실패 $failCount개, 건너뜀 $skipCount개',
+      );
 
-      // 기존 box 삭제
-      await oldBox.close();
-      await Hive.deleteBoxFromDisk(_oldBoxName);
-      appLogger.d('기존 box 삭제 완료: $_oldBoxName');
-
+      // 마이그레이션이 성공했거나 모두 건너뛴 경우에만 기존 box 삭제
+      if (failCount == 0) {
+        await oldBox.close();
+        await Hive.deleteBoxFromDisk(_oldBoxName);
+        appLogger.d('기존 box 삭제 완료: $_oldBoxName');
+      } else {
+        appLogger.e('마이그레이션 실패 항목이 있어 기존 box 보존');
+        await oldBox.close();
+      }
     } catch (e, stackTrace) {
       appLogger.e('마이그레이션 중 오류 발생', error: e, stackTrace: stackTrace);
       // 마이그레이션 실패해도 앱은 계속 실행
