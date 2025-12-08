@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/services/directions_service.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../shared/models/place.dart';
 import '../../../../shared/models/trip_plan.dart';
 import '../../../explore/presentation/screens/explore_screen.dart';
+import '../../data/models/route_option_model.dart';
 import '../../data/providers/trip_provider.dart';
 
 /// 활동 추가/편집 화면
@@ -41,6 +43,12 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
   ActivityType _selectedType = ActivityType.visit;
 
   bool _isLoading = false;
+
+  // 경로 검색 관련
+  final DirectionsService _directionsService = DirectionsService();
+  RouteOption? _selectedRoute;
+  List<RouteOption> _routeOptions = [];
+  bool _isSearchingRoute = false;
 
   @override
   void initState() {
@@ -81,6 +89,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
       _selectedPlace = activity.place;
       _selectedType = activity.type;
+      _selectedRoute = activity.selectedRoute;
     }
   }
 
@@ -178,6 +187,14 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
             const SizedBox(height: 8),
             _buildPlaceSelector(),
             const SizedBox(height: 24),
+
+            // 경로 검색 (교통 타입일 때만 표시)
+            if (_selectedType == ActivityType.transportation) ...[
+              _buildSectionTitle('경로 검색'),
+              const SizedBox(height: 8),
+              _buildRouteSearchSection(),
+              const SizedBox(height: 24),
+            ],
 
             // 활동 제목 (장소가 없을 때 필수)
             if (_selectedPlace == null) ...[
@@ -479,6 +496,375 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
     });
   }
 
+  /// 경로 검색 섹션 위젯
+  Widget _buildRouteSearchSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 경로 검색 버튼
+        OutlinedButton.icon(
+          onPressed: _isSearchingRoute ? null : _searchRoute,
+          icon: _isSearchingRoute
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.directions),
+          label: Text(_isSearchingRoute ? '경로 검색 중...' : '경로 검색'),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.all(16),
+            minimumSize: const Size.fromHeight(56),
+          ),
+        ),
+
+        // 선택된 경로 표시
+        if (_selectedRoute != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            color: AppColors.primary.withValues(alpha: 0.05),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle,
+                        color: AppColors.success,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '경로 선택됨',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            _selectedRoute = null;
+                          });
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // 출발지 → 도착지
+                  if (_selectedRoute!.departureLocation != null &&
+                      _selectedRoute!.arrivalLocation != null)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_selectedRoute!.departureLocation} → ${_selectedRoute!.arrivalLocation}',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 4),
+                  // 소요 시간 및 거리
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_selectedRoute!.durationMinutes}분',
+                        style: AppTextStyles.bodySmall,
+                      ),
+                      const SizedBox(width: 16),
+                      const Icon(
+                        Icons.straighten,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _selectedRoute!.distance,
+                        style: AppTextStyles.bodySmall,
+                      ),
+                    ],
+                  ),
+                  // 교통 수단 정보
+                  if (_selectedRoute!.transportOptions != null &&
+                      _selectedRoute!.transportOptions!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: _selectedRoute!.transportOptions!
+                          .take(3)
+                          .map((step) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  step.name,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.primary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// 경로 검색
+  Future<void> _searchRoute() async {
+    // 출발지와 도착지가 필요함
+    if (_selectedPlace == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('먼저 도착 장소를 선택해주세요'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+
+    // 여행 계획 정보에서 출발지 가져오기 (첫날 첫 활동의 장소 또는 여행지)
+    final trips = ref.read(allTripsProvider);
+    final trip = trips.firstWhere((t) => t.id == widget.tripId);
+
+    // 출발지는 여행 목적지로 설정 (간단히)
+    final origin = trip.destination;
+    final destination = _selectedPlace!.name;
+
+    setState(() {
+      _isSearchingRoute = true;
+    });
+
+    try {
+      Logger.info(
+        '경로 검색 시작: $origin → $destination',
+        'AddActivityScreen',
+      );
+
+      final routes = await _directionsService.searchRoutes(
+        origin,
+        destination,
+        mode: TravelMode.transit,
+      );
+
+      if (routes.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('경로를 찾을 수 없습니다'),
+              backgroundColor: AppColors.warning,
+            ),
+          );
+        }
+        return;
+      }
+
+      setState(() {
+        _routeOptions = routes;
+      });
+
+      // 경로 선택 다이얼로그 표시
+      if (mounted) {
+        _showRouteSelectionDialog();
+      }
+    } catch (e, stackTrace) {
+      Logger.error('경로 검색 실패', e, stackTrace, 'AddActivityScreen');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('경로 검색에 실패했습니다'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSearchingRoute = false;
+        });
+      }
+    }
+  }
+
+  /// 경로 선택 다이얼로그
+  void _showRouteSelectionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('경로 선택'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: _routeOptions.length,
+            itemBuilder: (context, index) {
+              final route = _routeOptions[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedRoute = route;
+                    });
+                    Navigator.pop(context);
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 경로 번호
+                        Text(
+                          '경로 ${index + 1}',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // 출발지 → 도착지
+                        if (route.departureLocation != null &&
+                            route.arrivalLocation != null)
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                size: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  '${route.departureLocation} → ${route.arrivalLocation}',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        const SizedBox(height: 4),
+                        // 소요 시간 및 거리
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${route.durationMinutes}분',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            const Icon(
+                              Icons.straighten,
+                              size: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              route.distance,
+                              style: AppTextStyles.bodySmall,
+                            ),
+                          ],
+                        ),
+                        // 교통 수단
+                        if (route.transportOptions != null &&
+                            route.transportOptions!.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 4,
+                            runSpacing: 4,
+                            children: route.transportOptions!
+                                .map((step) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            AppColors.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        '${step.name} (${step.duration})',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.primary,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ],
+                        // 상세 정보
+                        if (route.details != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            route.details!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 활동 저장
   Future<void> _saveActivity() async {
     if (!_formKey.currentState!.validate()) {
@@ -537,6 +923,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
             ? _reservationController.text.trim()
             : null,
         isCompleted: widget.activity?.isCompleted ?? false,
+        selectedRoute: _selectedRoute,
       );
 
       if (widget.activity == null) {
