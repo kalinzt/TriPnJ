@@ -5,6 +5,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../shared/models/trip_plan.dart';
+import '../../data/models/route_option_model.dart';
+import '../../data/models/transport_step_model.dart';
 
 /// 활동 카드 위젯
 class ActivityCard extends StatelessWidget {
@@ -232,6 +234,15 @@ class ActivityCard extends StatelessWidget {
                         ),
                       ),
                     ],
+
+                    // 경로 정보 (교통 활동일 때만 표시)
+                    if (activity.type == ActivityType.transportation &&
+                        activity.selectedRoute != null) ...[
+                      const SizedBox(height: 8),
+                      const Divider(height: 1),
+                      const SizedBox(height: 8),
+                      _buildRouteInfo(activity.selectedRoute!),
+                    ],
                   ],
                 ),
               ),
@@ -344,6 +355,211 @@ class ActivityCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// 경로 정보 위젯
+  Widget _buildRouteInfo(RouteOption route) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 경로 요약 (출발지 > 도착지)
+        if (route.departureLocation != null && route.arrivalLocation != null)
+          _buildRouteSummary(route),
+
+        // 경로 단계 (교통 수단별)
+        if (route.transportOptions != null && route.transportOptions!.isNotEmpty)
+          _buildTransportSteps(route.transportOptions!),
+
+        // 도착 시간 정보
+        if (route.estimatedArrivalTime != null || route.delayedArrivalTime != null)
+          _buildArrivalTimeInfo(route),
+
+        // 출발 정보
+        if (route.departureNote != null) _buildDepartureNote(route.departureNote!),
+      ],
+    );
+  }
+
+  /// 경로 요약 (출발지 > 도착지)
+  Widget _buildRouteSummary(RouteOption route) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.location_on,
+            size: 14,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '${route.departureLocation} → ${route.arrivalLocation}',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 경로 단계들 (교통 수단별)
+  Widget _buildTransportSteps(List<TransportStep> steps) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          ...List.generate(steps.length, (index) {
+            final step = steps[index];
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (index > 0)
+                  Text(
+                    ' • ',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                _buildTransportStepWidget(step),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// 개별 TransportStep 위젯
+  Widget _buildTransportStepWidget(TransportStep step) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _getTransportIcon(step.icon),
+            size: 14,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '${step.name} (${step.duration})',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 도착 시간 정보
+  Widget _buildArrivalTimeInfo(RouteOption route) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (route.estimatedArrivalTime != null)
+            Row(
+              children: [
+                const Icon(
+                  Icons.schedule,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '도착: ${route.estimatedArrivalTime}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          if (route.delayedArrivalTime != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(
+                  Icons.warning,
+                  size: 14,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '지연: ${route.delayedArrivalTime}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.warning,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 출발 정보
+  Widget _buildDepartureNote(String note) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.info_outline,
+            size: 14,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              note,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 교통 수단 아이콘 매핑
+  IconData _getTransportIcon(String? icon) {
+    switch (icon?.toLowerCase()) {
+      case 'subway':
+        return Icons.train;
+      case 'bus':
+        return Icons.directions_bus;
+      case 'train':
+        return Icons.train;
+      case 'flight':
+        return Icons.flight;
+      case 'ferry':
+        return Icons.directions_boat;
+      case 'cable_car':
+        return Icons.cable;
+      case 'tram':
+        return Icons.tram;
+      case 'walking':
+        return Icons.directions_walk;
+      default:
+        return Icons.directions_transit;
+    }
   }
 }
 

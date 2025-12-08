@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'place.dart';
+import '../../features/plan/data/models/route_option_model.dart';
 
 part 'trip_plan.freezed.dart';
 part 'trip_plan.g.dart';
@@ -109,6 +110,9 @@ class Activity with _$Activity {
 
     /// 완료 여부
     @Default(false) bool isCompleted,
+
+    /// 선택된 경로 정보 (교통 관련 활동에서 사용)
+    RouteOption? selectedRoute,
   }) = _Activity;
 
   factory Activity.fromJson(Map<String, dynamic> json) =>

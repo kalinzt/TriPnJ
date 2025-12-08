@@ -40,12 +40,8 @@ mixin _$CachedRecommendation {
   /// 캐시 생성 시 사용한 검색 반경 (미터)
   int get searchRadiusMeters => throw _privateConstructorUsedError;
 
-  /// Serializes this CachedRecommendation to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of CachedRecommendation
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $CachedRecommendationCopyWith<CachedRecommendation> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -76,8 +72,6 @@ class _$CachedRecommendationCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of CachedRecommendation
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -142,8 +136,6 @@ class __$$CachedRecommendationImplCopyWithImpl<$Res>
       $Res Function(_$CachedRecommendationImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of CachedRecommendation
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -264,7 +256,7 @@ class _$CachedRecommendationImpl implements _CachedRecommendation {
                 other.searchRadiusMeters == searchRadiusMeters));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -275,9 +267,7 @@ class _$CachedRecommendationImpl implements _CachedRecommendation {
       longitude,
       searchRadiusMeters);
 
-  /// Create a copy of CachedRecommendation
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$CachedRecommendationImplCopyWith<_$CachedRecommendationImpl>
@@ -305,36 +295,34 @@ abstract class _CachedRecommendation implements CachedRecommendation {
   factory _CachedRecommendation.fromJson(Map<String, dynamic> json) =
       _$CachedRecommendationImpl.fromJson;
 
-  /// 추천 장소 목록
   @override
+
+  /// 추천 장소 목록
   List<Place> get places;
+  @override
 
   /// 각 장소의 추천 점수
   ///
   /// Key: Place ID, Value: 추천 점수 (0.0 ~ 1.0)
-  @override
   Map<String, double> get scores;
+  @override
 
   /// 캐시 생성 시간
-  @override
   DateTime get cachedAt;
+  @override
 
   /// 캐시 생성 시 사용자 위치 (위도)
-  @override
   double get latitude;
+  @override
 
   /// 캐시 생성 시 사용자 위치 (경도)
-  @override
   double get longitude;
+  @override
 
   /// 캐시 생성 시 사용한 검색 반경 (미터)
-  @override
   int get searchRadiusMeters;
-
-  /// Create a copy of CachedRecommendation
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$CachedRecommendationImplCopyWith<_$CachedRecommendationImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

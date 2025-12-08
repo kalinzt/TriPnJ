@@ -65,12 +65,8 @@ mixin _$Place {
   /// 비즈니스 상태 (OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY)
   String? get businessStatus => throw _privateConstructorUsedError;
 
-  /// Serializes this Place to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of Place
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $PlaceCopyWith<Place> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -107,8 +103,6 @@ class _$PlaceCopyWithImpl<$Res, $Val extends Place>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Place
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -226,8 +220,6 @@ class __$$PlaceImplCopyWithImpl<$Res>
       _$PlaceImpl _value, $Res Function(_$PlaceImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Place
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -448,7 +440,7 @@ class _$PlaceImpl implements _Place {
                 other.businessStatus == businessStatus));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -468,9 +460,7 @@ class _$PlaceImpl implements _Place {
       description,
       businessStatus);
 
-  /// Create a copy of Place
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$PlaceImplCopyWith<_$PlaceImpl> get copyWith =>
@@ -504,70 +494,68 @@ abstract class _Place implements Place {
 
   factory _Place.fromJson(Map<String, dynamic> json) = _$PlaceImpl.fromJson;
 
-  /// Google Places ID
   @override
+
+  /// Google Places ID
   String get id;
+  @override
 
   /// 장소 이름
-  @override
   String get name;
+  @override
 
   /// 주소
-  @override
   String get address;
+  @override
 
   /// 위도
-  @override
   double get latitude;
+  @override
 
   /// 경도
-  @override
   double get longitude;
+  @override
 
   /// 평점 (0.0 ~ 5.0)
-  @override
   double? get rating;
+  @override
 
   /// 사진 URL 목록
-  @override
   List<String> get photos;
+  @override
 
   /// 장소 유형 (예: restaurant, tourist_attraction)
-  @override
   List<String> get types;
+  @override
 
   /// 가격 레벨 (0: 무료, 1: 저렴, 2: 보통, 3: 비쌈, 4: 매우 비쌈)
-  @override
   int? get priceLevel;
+  @override
 
   /// 영업 시간 정보
-  @override
   String? get openingHours;
+  @override
 
   /// 전화번호
-  @override
   String? get phoneNumber;
+  @override
 
   /// 웹사이트
-  @override
   String? get website;
+  @override
 
   /// 리뷰 수
-  @override
   int? get userRatingsTotal;
+  @override
 
   /// 장소 설명
-  @override
   String? get description;
+  @override
 
   /// 비즈니스 상태 (OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY)
-  @override
   String? get businessStatus;
-
-  /// Create a copy of Place
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$PlaceImplCopyWith<_$PlaceImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -590,12 +578,8 @@ mixin _$PlacePhoto {
   /// HTML 속성
   List<String> get htmlAttributions => throw _privateConstructorUsedError;
 
-  /// Serializes this PlacePhoto to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of PlacePhoto
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $PlacePhotoCopyWith<PlacePhoto> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -623,8 +607,6 @@ class _$PlacePhotoCopyWithImpl<$Res, $Val extends PlacePhoto>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of PlacePhoto
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -677,8 +659,6 @@ class __$$PlacePhotoImplCopyWithImpl<$Res>
       _$PlacePhotoImpl _value, $Res Function(_$PlacePhotoImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of PlacePhoto
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -764,14 +744,12 @@ class _$PlacePhotoImpl implements _PlacePhoto {
                 .equals(other._htmlAttributions, _htmlAttributions));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, photoReference, width, height,
       const DeepCollectionEquality().hash(_htmlAttributions));
 
-  /// Create a copy of PlacePhoto
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$PlacePhotoImplCopyWith<_$PlacePhotoImpl> get copyWith =>
@@ -795,26 +773,24 @@ abstract class _PlacePhoto implements PlacePhoto {
   factory _PlacePhoto.fromJson(Map<String, dynamic> json) =
       _$PlacePhotoImpl.fromJson;
 
-  /// 사진 참조 ID
   @override
+
+  /// 사진 참조 ID
   String get photoReference;
+  @override
 
   /// 사진 너비
-  @override
   int? get width;
+  @override
 
   /// 사진 높이
-  @override
   int? get height;
+  @override
 
   /// HTML 속성
-  @override
   List<String> get htmlAttributions;
-
-  /// Create a copy of PlacePhoto
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$PlacePhotoImplCopyWith<_$PlacePhotoImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -843,12 +819,8 @@ mixin _$PlaceReview {
   /// 언어
   String? get language => throw _privateConstructorUsedError;
 
-  /// Serializes this PlaceReview to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of PlaceReview
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $PlaceReviewCopyWith<PlaceReview> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -878,8 +850,6 @@ class _$PlaceReviewCopyWithImpl<$Res, $Val extends PlaceReview>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of PlaceReview
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -944,8 +914,6 @@ class __$$PlaceReviewImplCopyWithImpl<$Res>
       _$PlaceReviewImpl _value, $Res Function(_$PlaceReviewImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of PlaceReview
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1044,14 +1012,12 @@ class _$PlaceReviewImpl implements _PlaceReview {
                 other.language == language));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType, authorName, authorPhotoUrl, rating, text, time, language);
 
-  /// Create a copy of PlaceReview
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$PlaceReviewImplCopyWith<_$PlaceReviewImpl> get copyWith =>
@@ -1077,34 +1043,32 @@ abstract class _PlaceReview implements PlaceReview {
   factory _PlaceReview.fromJson(Map<String, dynamic> json) =
       _$PlaceReviewImpl.fromJson;
 
-  /// 작성자 이름
   @override
+
+  /// 작성자 이름
   String get authorName;
+  @override
 
   /// 작성자 프로필 사진 URL
-  @override
   String? get authorPhotoUrl;
+  @override
 
   /// 평점 (1 ~ 5)
-  @override
   int get rating;
+  @override
 
   /// 리뷰 텍스트
-  @override
   String get text;
+  @override
 
   /// 작성 시간 (Unix timestamp)
-  @override
   int get time;
+  @override
 
   /// 언어
-  @override
   String? get language;
-
-  /// Create a copy of PlaceReview
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$PlaceReviewImplCopyWith<_$PlaceReviewImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

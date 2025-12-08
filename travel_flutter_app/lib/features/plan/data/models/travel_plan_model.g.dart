@@ -27,13 +27,14 @@ class TravelPlanAdapter extends TypeAdapter<TravelPlan> {
       status: fields[7] as String,
       createdAt: fields[8] as DateTime,
       updatedAt: fields[9] as DateTime,
+      dailySchedules: (fields[10] as List?)?.cast<DailySchedule>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, TravelPlan obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class TravelPlanAdapter extends TypeAdapter<TravelPlan> {
       ..writeByte(8)
       ..write(obj.createdAt)
       ..writeByte(9)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(10)
+      ..write(obj.dailySchedules);
   }
 
   @override

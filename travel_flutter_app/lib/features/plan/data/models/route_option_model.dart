@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+import 'transport_step_model.dart';
+
 /// 경로 좌표 정보
 class RouteCoordinates {
   /// 출발지 위도
@@ -70,6 +73,24 @@ class RouteOption {
   /// 경로 좌표 정보
   final RouteCoordinates? coordinates;
 
+  /// 출발지명 (예: "서울")
+  final String? departureLocation;
+
+  /// 도착지명 (예: "부산")
+  final String? arrivalLocation;
+
+  /// 경로의 각 단계 정보 (예: 9호선 → 공항철도)
+  final List<TransportStep>? transportOptions;
+
+  /// 예상 도착 시간 (예: "18분(정시) 후")
+  final String? estimatedArrivalTime;
+
+  /// 지연 시 도착 시간 (예: "32분(지연됨) 후")
+  final String? delayedArrivalTime;
+
+  /// 출발 정보 (예: "양천향교에서 출발")
+  final String? departureNote;
+
   const RouteOption({
     required this.routeId,
     required this.transportMode,
@@ -78,6 +99,12 @@ class RouteOption {
     required this.distance,
     this.details,
     this.coordinates,
+    this.departureLocation,
+    this.arrivalLocation,
+    this.transportOptions,
+    this.estimatedArrivalTime,
+    this.delayedArrivalTime,
+    this.departureNote,
   });
 
   /// JSON으로 변환
@@ -90,6 +117,12 @@ class RouteOption {
       'distance': distance,
       'details': details,
       'coordinates': coordinates?.toJson(),
+      'departureLocation': departureLocation,
+      'arrivalLocation': arrivalLocation,
+      'transportOptions': transportOptions?.map((step) => step.toJson()).toList(),
+      'estimatedArrivalTime': estimatedArrivalTime,
+      'delayedArrivalTime': delayedArrivalTime,
+      'departureNote': departureNote,
     };
   }
 
@@ -105,6 +138,16 @@ class RouteOption {
       coordinates: json['coordinates'] != null
           ? RouteCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>)
           : null,
+      departureLocation: json['departureLocation'] as String?,
+      arrivalLocation: json['arrivalLocation'] as String?,
+      transportOptions: json['transportOptions'] != null
+          ? (json['transportOptions'] as List<dynamic>)
+              .map((step) => TransportStep.fromJson(step as Map<String, dynamic>))
+              .toList()
+          : null,
+      estimatedArrivalTime: json['estimatedArrivalTime'] as String?,
+      delayedArrivalTime: json['delayedArrivalTime'] as String?,
+      departureNote: json['departureNote'] as String?,
     );
   }
 
@@ -117,6 +160,12 @@ class RouteOption {
     String? distance,
     String? details,
     RouteCoordinates? coordinates,
+    String? departureLocation,
+    String? arrivalLocation,
+    List<TransportStep>? transportOptions,
+    String? estimatedArrivalTime,
+    String? delayedArrivalTime,
+    String? departureNote,
   }) {
     return RouteOption(
       routeId: routeId ?? this.routeId,
@@ -126,6 +175,12 @@ class RouteOption {
       distance: distance ?? this.distance,
       details: details ?? this.details,
       coordinates: coordinates ?? this.coordinates,
+      departureLocation: departureLocation ?? this.departureLocation,
+      arrivalLocation: arrivalLocation ?? this.arrivalLocation,
+      transportOptions: transportOptions ?? this.transportOptions,
+      estimatedArrivalTime: estimatedArrivalTime ?? this.estimatedArrivalTime,
+      delayedArrivalTime: delayedArrivalTime ?? this.delayedArrivalTime,
+      departureNote: departureNote ?? this.departureNote,
     );
   }
 
@@ -133,7 +188,10 @@ class RouteOption {
   String toString() {
     return 'RouteOption(routeId: $routeId, transportMode: $transportMode, '
         'vehicleInfo: $vehicleInfo, durationMinutes: $durationMinutes, '
-        'distance: $distance, details: $details, coordinates: $coordinates)';
+        'distance: $distance, details: $details, coordinates: $coordinates, '
+        'departureLocation: $departureLocation, arrivalLocation: $arrivalLocation, '
+        'transportOptions: $transportOptions, estimatedArrivalTime: $estimatedArrivalTime, '
+        'delayedArrivalTime: $delayedArrivalTime, departureNote: $departureNote)';
   }
 
   @override
@@ -147,7 +205,13 @@ class RouteOption {
         other.durationMinutes == durationMinutes &&
         other.distance == distance &&
         other.details == details &&
-        other.coordinates == coordinates;
+        other.coordinates == coordinates &&
+        other.departureLocation == departureLocation &&
+        other.arrivalLocation == arrivalLocation &&
+        listEquals(other.transportOptions, transportOptions) &&
+        other.estimatedArrivalTime == estimatedArrivalTime &&
+        other.delayedArrivalTime == delayedArrivalTime &&
+        other.departureNote == departureNote;
   }
 
   @override
@@ -160,6 +224,12 @@ class RouteOption {
       distance,
       details,
       coordinates,
+      departureLocation,
+      arrivalLocation,
+      Object.hashAll(transportOptions ?? []),
+      estimatedArrivalTime,
+      delayedArrivalTime,
+      departureNote,
     );
   }
 }

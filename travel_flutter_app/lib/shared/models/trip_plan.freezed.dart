@@ -59,12 +59,8 @@ mixin _$TripPlan {
   /// 수정 일시
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
-  /// Serializes this TripPlan to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of TripPlan
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $TripPlanCopyWith<TripPlan> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -100,8 +96,6 @@ class _$TripPlanCopyWithImpl<$Res, $Val extends TripPlan>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of TripPlan
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -208,8 +202,6 @@ class __$$TripPlanImplCopyWithImpl<$Res>
       _$TripPlanImpl _value, $Res Function(_$TripPlanImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of TripPlan
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -399,7 +391,7 @@ class _$TripPlanImpl implements _TripPlan {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -417,9 +409,7 @@ class _$TripPlanImpl implements _TripPlan {
       createdAt,
       updatedAt);
 
-  /// Create a copy of TripPlan
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$TripPlanImplCopyWith<_$TripPlanImpl> get copyWith =>
@@ -452,62 +442,60 @@ abstract class _TripPlan implements TripPlan {
   factory _TripPlan.fromJson(Map<String, dynamic> json) =
       _$TripPlanImpl.fromJson;
 
-  /// 고유 ID
   @override
+
+  /// 고유 ID
   String get id;
+  @override
 
   /// 여행 제목
-  @override
   String get title;
+  @override
 
   /// 여행 시작일
-  @override
   DateTime get startDate;
+  @override
 
   /// 여행 종료일
-  @override
   DateTime get endDate;
+  @override
 
   /// 목적지
-  @override
   String get destination;
+  @override
 
   /// 목적지 위도
-  @override
   double? get destinationLatitude;
+  @override
 
   /// 목적지 경도
-  @override
   double? get destinationLongitude;
+  @override
 
   /// 일별 계획 목록
-  @override
   List<DailyPlan> get dailyPlans;
+  @override
 
   /// 여행 메모
-  @override
   String? get memo;
+  @override
 
   /// 예산
-  @override
   double? get budget;
+  @override
 
   /// 썸네일 이미지 URL
-  @override
   String? get thumbnailUrl;
+  @override
 
   /// 생성 일시
-  @override
   DateTime get createdAt;
+  @override
 
   /// 수정 일시
-  @override
   DateTime get updatedAt;
-
-  /// Create a copy of TripPlan
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$TripPlanImplCopyWith<_$TripPlanImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -530,12 +518,8 @@ mixin _$DailyPlan {
   /// 일별 메모
   String? get memo => throw _privateConstructorUsedError;
 
-  /// Serializes this DailyPlan to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of DailyPlan
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $DailyPlanCopyWith<DailyPlan> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -559,8 +543,6 @@ class _$DailyPlanCopyWithImpl<$Res, $Val extends DailyPlan>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of DailyPlan
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -610,8 +592,6 @@ class __$$DailyPlanImplCopyWithImpl<$Res>
       _$DailyPlanImpl _value, $Res Function(_$DailyPlanImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of DailyPlan
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -695,14 +675,12 @@ class _$DailyPlanImpl implements _DailyPlan {
             (identical(other.memo, memo) || other.memo == memo));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, date, title,
       const DeepCollectionEquality().hash(_activities), memo);
 
-  /// Create a copy of DailyPlan
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$DailyPlanImplCopyWith<_$DailyPlanImpl> get copyWith =>
@@ -726,26 +704,24 @@ abstract class _DailyPlan implements DailyPlan {
   factory _DailyPlan.fromJson(Map<String, dynamic> json) =
       _$DailyPlanImpl.fromJson;
 
-  /// 날짜
   @override
+
+  /// 날짜
   DateTime get date;
+  @override
 
   /// 일정 제목 (예: "서울 첫째 날")
-  @override
   String? get title;
+  @override
 
   /// 활동 목록
-  @override
   List<Activity> get activities;
+  @override
 
   /// 일별 메모
-  @override
   String? get memo;
-
-  /// Create a copy of DailyPlan
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$DailyPlanImplCopyWith<_$DailyPlanImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -789,12 +765,11 @@ mixin _$Activity {
   /// 완료 여부
   bool get isCompleted => throw _privateConstructorUsedError;
 
-  /// Serializes this Activity to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  /// 선택된 경로 정보 (교통 관련 활동에서 사용)
+  RouteOption? get selectedRoute => throw _privateConstructorUsedError;
 
-  /// Create a copy of Activity
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
   $ActivityCopyWith<Activity> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -815,7 +790,8 @@ abstract class $ActivityCopyWith<$Res> {
       String? memo,
       double? estimatedCost,
       String? reservationInfo,
-      bool isCompleted});
+      bool isCompleted,
+      RouteOption? selectedRoute});
 
   $PlaceCopyWith<$Res>? get place;
 }
@@ -830,8 +806,6 @@ class _$ActivityCopyWithImpl<$Res, $Val extends Activity>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Activity
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -846,6 +820,7 @@ class _$ActivityCopyWithImpl<$Res, $Val extends Activity>
     Object? estimatedCost = freezed,
     Object? reservationInfo = freezed,
     Object? isCompleted = null,
+    Object? selectedRoute = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -892,11 +867,13 @@ class _$ActivityCopyWithImpl<$Res, $Val extends Activity>
           ? _value.isCompleted
           : isCompleted // ignore: cast_nullable_to_non_nullable
               as bool,
+      selectedRoute: freezed == selectedRoute
+          ? _value.selectedRoute
+          : selectedRoute // ignore: cast_nullable_to_non_nullable
+              as RouteOption?,
     ) as $Val);
   }
 
-  /// Create a copy of Activity
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $PlaceCopyWith<$Res>? get place {
@@ -929,7 +906,8 @@ abstract class _$$ActivityImplCopyWith<$Res>
       String? memo,
       double? estimatedCost,
       String? reservationInfo,
-      bool isCompleted});
+      bool isCompleted,
+      RouteOption? selectedRoute});
 
   @override
   $PlaceCopyWith<$Res>? get place;
@@ -943,8 +921,6 @@ class __$$ActivityImplCopyWithImpl<$Res>
       _$ActivityImpl _value, $Res Function(_$ActivityImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Activity
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -959,6 +935,7 @@ class __$$ActivityImplCopyWithImpl<$Res>
     Object? estimatedCost = freezed,
     Object? reservationInfo = freezed,
     Object? isCompleted = null,
+    Object? selectedRoute = freezed,
   }) {
     return _then(_$ActivityImpl(
       id: null == id
@@ -1005,6 +982,10 @@ class __$$ActivityImplCopyWithImpl<$Res>
           ? _value.isCompleted
           : isCompleted // ignore: cast_nullable_to_non_nullable
               as bool,
+      selectedRoute: freezed == selectedRoute
+          ? _value.selectedRoute
+          : selectedRoute // ignore: cast_nullable_to_non_nullable
+              as RouteOption?,
     ));
   }
 }
@@ -1023,7 +1004,8 @@ class _$ActivityImpl implements _Activity {
       this.memo,
       this.estimatedCost,
       this.reservationInfo,
-      this.isCompleted = false});
+      this.isCompleted = false,
+      this.selectedRoute});
 
   factory _$ActivityImpl.fromJson(Map<String, dynamic> json) =>
       _$$ActivityImplFromJson(json);
@@ -1074,9 +1056,13 @@ class _$ActivityImpl implements _Activity {
   @JsonKey()
   final bool isCompleted;
 
+  /// 선택된 경로 정보 (교통 관련 활동에서 사용)
+  @override
+  final RouteOption? selectedRoute;
+
   @override
   String toString() {
-    return 'Activity(id: $id, startTime: $startTime, endTime: $endTime, durationMinutes: $durationMinutes, place: $place, title: $title, type: $type, memo: $memo, estimatedCost: $estimatedCost, reservationInfo: $reservationInfo, isCompleted: $isCompleted)';
+    return 'Activity(id: $id, startTime: $startTime, endTime: $endTime, durationMinutes: $durationMinutes, place: $place, title: $title, type: $type, memo: $memo, estimatedCost: $estimatedCost, reservationInfo: $reservationInfo, isCompleted: $isCompleted, selectedRoute: $selectedRoute)';
   }
 
   @override
@@ -1099,10 +1085,12 @@ class _$ActivityImpl implements _Activity {
             (identical(other.reservationInfo, reservationInfo) ||
                 other.reservationInfo == reservationInfo) &&
             (identical(other.isCompleted, isCompleted) ||
-                other.isCompleted == isCompleted));
+                other.isCompleted == isCompleted) &&
+            (identical(other.selectedRoute, selectedRoute) ||
+                other.selectedRoute == selectedRoute));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -1116,11 +1104,10 @@ class _$ActivityImpl implements _Activity {
       memo,
       estimatedCost,
       reservationInfo,
-      isCompleted);
+      isCompleted,
+      selectedRoute);
 
-  /// Create a copy of Activity
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ActivityImplCopyWith<_$ActivityImpl> get copyWith =>
@@ -1146,59 +1133,62 @@ abstract class _Activity implements Activity {
       final String? memo,
       final double? estimatedCost,
       final String? reservationInfo,
-      final bool isCompleted}) = _$ActivityImpl;
+      final bool isCompleted,
+      final RouteOption? selectedRoute}) = _$ActivityImpl;
 
   factory _Activity.fromJson(Map<String, dynamic> json) =
       _$ActivityImpl.fromJson;
 
-  /// 고유 ID
   @override
+
+  /// 고유 ID
   String get id;
+  @override
 
   /// 시작 시간
-  @override
   DateTime? get startTime;
+  @override
 
   /// 종료 시간 (또는 소요 시간)
-  @override
   DateTime? get endTime;
+  @override
 
   /// 소요 시간 (분 단위)
-  @override
   int? get durationMinutes;
+  @override
 
   /// 장소 (Place 모델)
-  @override
   Place? get place;
+  @override
 
   /// 활동 제목 (place가 없을 경우 사용)
-  @override
   String? get title;
+  @override
 
   /// 활동 유형
-  @override
   ActivityType get type;
+  @override
 
   /// 메모
-  @override
   String? get memo;
+  @override
 
   /// 예상 비용
-  @override
   double? get estimatedCost;
+  @override
 
   /// 예약 정보
-  @override
   String? get reservationInfo;
+  @override
 
   /// 완료 여부
-  @override
   bool get isCompleted;
-
-  /// Create a copy of Activity
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+
+  /// 선택된 경로 정보 (교통 관련 활동에서 사용)
+  RouteOption? get selectedRoute;
+  @override
+  @JsonKey(ignore: true)
   _$$ActivityImplCopyWith<_$ActivityImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -82,6 +82,9 @@ _$ActivityImpl _$$ActivityImplFromJson(Map<String, dynamic> json) =>
       estimatedCost: (json['estimatedCost'] as num?)?.toDouble(),
       reservationInfo: json['reservationInfo'] as String?,
       isCompleted: json['isCompleted'] as bool? ?? false,
+      selectedRoute: json['selectedRoute'] == null
+          ? null
+          : RouteOption.fromJson(json['selectedRoute'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$ActivityImplToJson(_$ActivityImpl instance) =>
@@ -97,6 +100,7 @@ Map<String, dynamic> _$$ActivityImplToJson(_$ActivityImpl instance) =>
       'estimatedCost': instance.estimatedCost,
       'reservationInfo': instance.reservationInfo,
       'isCompleted': instance.isCompleted,
+      'selectedRoute': instance.selectedRoute,
     };
 
 const _$ActivityTypeEnumMap = {

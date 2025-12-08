@@ -58,12 +58,8 @@ mixin _$UserPreference {
   /// 사용자가 주로 여행하는 거리
   double get averageTravelRadiusKm => throw _privateConstructorUsedError;
 
-  /// Serializes this UserPreference to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of UserPreference
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $UserPreferenceCopyWith<UserPreference> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -95,8 +91,6 @@ class _$UserPreferenceCopyWithImpl<$Res, $Val extends UserPreference>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of UserPreference
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -173,8 +167,6 @@ class __$$UserPreferenceImplCopyWithImpl<$Res>
       _$UserPreferenceImpl _value, $Res Function(_$UserPreferenceImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of UserPreference
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -376,7 +368,7 @@ class _$UserPreferenceImpl extends _UserPreference {
                 other.averageTravelRadiusKm == averageTravelRadiusKm));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -389,9 +381,7 @@ class _$UserPreferenceImpl extends _UserPreference {
       averageRatingPreference,
       averageTravelRadiusKm);
 
-  /// Create a copy of UserPreference
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$UserPreferenceImplCopyWith<_$UserPreferenceImpl> get copyWith =>
@@ -421,56 +411,54 @@ abstract class _UserPreference extends UserPreference {
   factory _UserPreference.fromJson(Map<String, dynamic> json) =
       _$UserPreferenceImpl.fromJson;
 
+  @override
+
   /// 카테고리별 선호도 가중치 (0.0 ~ 1.0)
   ///
   /// 예: {'restaurant': 0.7, 'cafe': 0.5, 'attraction': 0.8}
-  @override
   Map<String, double> get categoryWeights;
+  @override
 
   /// 방문한 장소 ID 목록
   ///
   /// Google Places ID 저장
-  @override
   List<String> get visitedPlaceIds;
+  @override
 
   /// 거절한 장소 ID 목록
   ///
   /// 추천에서 제외할 장소
-  @override
   List<String> get rejectedPlaceIds;
+  @override
 
   /// 즐겨찾기 장소 ID 목록
   ///
   /// 사용자가 즐겨찾기한 장소
-  @override
   List<String> get favoritePlaceIds;
+  @override
 
   /// 카테고리별 방문 횟수
   ///
   /// 예: {'restaurant': 15, 'cafe': 8, 'attraction': 12}
-  @override
   Map<String, int> get categoryVisitCount;
+  @override
 
   /// 마지막 업데이트 시간
-  @override
   DateTime get lastUpdated;
+  @override
 
   /// 선호 평점 기준선 (0.0 ~ 5.0)
   ///
   /// 사용자가 방문한 장소들의 평균 평점
-  @override
   double get averageRatingPreference;
+  @override
 
   /// 평균 여행 반경 (킬로미터)
   ///
   /// 사용자가 주로 여행하는 거리
-  @override
   double get averageTravelRadiusKm;
-
-  /// Create a copy of UserPreference
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$UserPreferenceImplCopyWith<_$UserPreferenceImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
