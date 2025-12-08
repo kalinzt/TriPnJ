@@ -31,36 +31,109 @@ class DiaryScreen extends ConsumerWidget {
     );
   }
 
-  /// 여행 계획 목록
+  /// 여행 계획 목록 (상태별 카테고리화)
   Widget _buildPlanList(BuildContext context, List<TravelPlan> plans) {
-    // 시작날짜가 오늘과 가까운 순으로 정렬
-    final sortedPlans = _sortPlansByProximity(plans);
+    // 상태별로 그룹화
+    final inProgressPlans = plans.where((plan) => plan.travelStatus == TravelStatus.inProgress).toList();
+    final plannedPlans = plans.where((plan) => plan.travelStatus == TravelStatus.planned).toList();
+    final completedPlans = plans.where((plan) => plan.travelStatus == TravelStatus.completed).toList();
 
-    return ListView.builder(
+    // 각 카테고리 내에서 근접도순 정렬
+    final sortedInProgress = _sortPlansByProximity(inProgressPlans);
+    final sortedPlanned = _sortPlansByProximity(plannedPlans);
+    final sortedCompleted = _sortPlansByProximity(completedPlans);
+
+    return ListView(
       padding: const EdgeInsets.all(16),
-      itemCount: sortedPlans.length,
-      itemBuilder: (context, index) {
-        final plan = sortedPlans[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
+      children: [
+        // 진행중
+        if (sortedInProgress.isNotEmpty)
+          _buildCategorySection(
+            context,
+            title: '진행중',
+            icon: Icons.flight_takeoff,
+            plans: sortedInProgress,
+            color: AppColors.primary,
+          ),
+        if (sortedInProgress.isNotEmpty) const SizedBox(height: 12),
+
+        // 예정됨
+        if (sortedPlanned.isNotEmpty)
+          _buildCategorySection(
+            context,
+            title: '예정됨',
+            icon: Icons.edit_calendar,
+            plans: sortedPlanned,
+            color: AppColors.textSecondary,
+          ),
+        if (sortedPlanned.isNotEmpty) const SizedBox(height: 12),
+
+        // 완료됨
+        if (sortedCompleted.isNotEmpty)
+          _buildCategorySection(
+            context,
+            title: '완료됨',
+            icon: Icons.done_all,
+            plans: sortedCompleted,
+            color: AppColors.textHint,
+          ),
+      ],
+    );
+  }
+
+  /// 카테고리 섹션 위젯
+  Widget _buildCategorySection(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required List<TravelPlan> plans,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 2,
+      child: ExpansionTile(
+        initiallyExpanded: title == '진행중' || title == '예정됨',
+        shape: const Border(),  // 이 줄 추가
+        collapsedShape: const Border(),  // 이 줄 추가
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        leading: Icon(icon, color: color),
+        title: Text(
+          title,
+          style: AppTextStyles.titleMedium.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          '여행 ${plans.length}',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        children: plans.map((plan) {
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
             leading: CircleAvatar(
-              backgroundColor: AppColors.primary,
+              backgroundColor: color.withValues(alpha: 0.2),
+              radius: 20,
               child: Icon(
                 _getStatusIcon(plan.travelStatus),
-                color: Colors.white,
-                size: 20,
+                color: color,
+                size: 18,
               ),
             ),
             title: Text(
               plan.name,
-              style: AppTextStyles.titleMedium,
+              style: AppTextStyles.titleSmall,
             ),
             subtitle: Text(
               _formatDateRange(plan),
-              style: AppTextStyles.bodySmall,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right, size: 20),
             onTap: () {
               Navigator.push(
                 context,
@@ -69,9 +142,9 @@ class DiaryScreen extends ConsumerWidget {
                 ),
               );
             },
-          ),
-        );
-      },
+          );
+        }).toList(),
+      ),
     );
   }
 
