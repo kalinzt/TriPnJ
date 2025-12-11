@@ -11,6 +11,7 @@ import '../../data/models/activity_model.dart';
 import '../../data/repositories/daily_schedule_repository.dart';
 import '../../data/repositories/activity_repository.dart';
 import '../../data/providers/travel_plan_provider.dart';
+import '../widgets/route_detail_bottom_sheet.dart';
 import 'add_schedule_screen.dart';
 import 'edit_schedule_screen.dart';
 import 'plan_timetable_screen.dart';
@@ -642,18 +643,66 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                     )
                   else
                     ...schedule.sortedActivities.map((activity) {
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          _getActivityIcon(activity.type),
-                          color: _getActivityColor(activity.type),
+                      // 경로 정보가 있는지 확인
+                      final hasRoute = activity.selectedRoute != null;
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        elevation: 1,
+                        child: InkWell(
+                          onTap: () => _editActivity(activity),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // 기본 정보 (아이콘, 제목, 시간)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      _getActivityIcon(activity.type),
+                                      color: _getActivityColor(activity.type),
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            activity.title,
+                                            style: AppTextStyles.bodyMedium.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${_formatTime(activity.startTime)} - ${_formatTime(activity.endTime)}',
+                                            style: AppTextStyles.bodySmall.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ],
+                                ),
+                                // 경로 정보 표시 (교통 수단일 때만)
+                                if (hasRoute && activity.selectedRoute != null) ...[
+                                  const SizedBox(height: 12),
+                                  const Divider(height: 1),
+                                  const SizedBox(height: 12),
+                                  _buildRouteInfoCompact(activity.selectedRoute!),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
-                        title: Text(activity.title),
-                        subtitle: Text(
-                          '${_formatTime(activity.startTime)} - ${_formatTime(activity.endTime)}',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => _editActivity(activity),
                       );
                     }),
                 ],
@@ -753,6 +802,173 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
     final start = formatter.format(_editedPlan.startDate);
     final end = formatter.format(_editedPlan.endDate);
     return '$start ~ $end';
+  }
+
+  /// 경로 정보 표시 (구글 스타일)
+  Widget _buildRouteInfoCompact(selectedRoute) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 출발지 → 도착지
+        if (selectedRoute.departureLocation != null && selectedRoute.arrivalLocation != null)
+          Row(
+            children: [
+              const Icon(Icons.trip_origin, size: 12, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                selectedRoute.departureLocation!,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_forward, size: 12, color: AppColors.textSecondary),
+              const SizedBox(width: 8),
+              const Icon(Icons.location_on, size: 12, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                selectedRoute.arrivalLocation!,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        const SizedBox(height: 8),
+        // 교통 수단 표시 (노선 번호 포함, 소요시간 제거)
+        if (selectedRoute.transportOptions != null && selectedRoute.transportOptions!.isNotEmpty) ...[
+          // 대중교통 step만 필터링 (도보 제외)
+          Builder(
+            builder: (context) {
+              final transitSteps = selectedRoute.transportOptions!.where((step) => step.type == 'transit').toList();
+              if (transitSteps.isEmpty) return const SizedBox.shrink();
+
+              return Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: transitSteps.map<Widget>((step) {
+                  return _buildTransportBadge(step);
+                }).toList(),
+              );
+            },
+          ),
+        ],
+        const SizedBox(height: 8),
+        // 소요 시간, 거리, 상세보기 버튼
+        Row(
+          children: [
+            const Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
+            const SizedBox(width: 4),
+            Text(
+              '약 ${selectedRoute.durationMinutes}분',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Icon(Icons.straighten, size: 14, color: AppColors.textSecondary),
+            const SizedBox(width: 4),
+            Text(
+              selectedRoute.distance,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const Spacer(),
+            // 상세보기 버튼
+            InkWell(
+              onTap: () {
+                RouteDetailBottomSheet.show(context, selectedRoute);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '상세보기',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.chevron_right,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// 교통 수단 뱃지 (노선 번호만 표시, 소요시간 제거)
+  Widget _buildTransportBadge(step) {
+    Color badgeColor;
+    IconData icon;
+
+    // 교통 수단별 색상 및 아이콘
+    switch (step.icon?.toLowerCase()) {
+      case 'subway':
+        badgeColor = const Color(0xFF2196F3); // 파란색
+        icon = Icons.train;
+        break;
+      case 'bus':
+        badgeColor = const Color(0xFF4CAF50); // 녹색
+        icon = Icons.directions_bus;
+        break;
+      case 'train':
+        badgeColor = const Color(0xFFFF9800); // 주황색
+        icon = Icons.train;
+        break;
+      case 'tram':
+        badgeColor = const Color(0xFF9C27B0); // 보라색
+        icon = Icons.tram;
+        break;
+      case 'walking':
+        badgeColor = const Color(0xFF757575); // 회색
+        icon = Icons.directions_walk;
+        break;
+      default:
+        badgeColor = AppColors.primary;
+        icon = Icons.directions_transit;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: badgeColor),
+          const SizedBox(width: 6),
+          Text(
+            step.name,  // 노선 번호/이름 (예: "9호선", "740")
+            style: AppTextStyles.bodySmall.copyWith(
+              color: badgeColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

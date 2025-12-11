@@ -15,12 +15,24 @@ class TransportStep {
   /// 타입 (예: 'transit', 'walking' 등)
   final String type;
 
+  /// 출발역/정류장 이름 (예: "홍대입구역", "신촌역 1번 출구")
+  final String? departureStop;
+
+  /// 도착역/정류장 이름 (예: "을지로3가역", "강남역 2번 출구")
+  final String? arrivalStop;
+
+  /// 정거장 수 (예: 13개 정거장)
+  final int? numStops;
+
   const TransportStep({
     required this.stepId,
     this.icon,
     required this.name,
     required this.duration,
     required this.type,
+    this.departureStop,
+    this.arrivalStop,
+    this.numStops,
   });
 
   /// JSON으로 변환
@@ -31,6 +43,9 @@ class TransportStep {
       'name': name,
       'duration': duration,
       'type': type,
+      'departureStop': departureStop,
+      'arrivalStop': arrivalStop,
+      'numStops': numStops,
     };
   }
 
@@ -45,6 +60,9 @@ class TransportStep {
       name: safeJson['name'] as String,
       duration: safeJson['duration'] as String,
       type: safeJson['type'] as String,
+      departureStop: safeJson['departureStop'] as String?,
+      arrivalStop: safeJson['arrivalStop'] as String?,
+      numStops: safeJson['numStops'] as int?,
     );
   }
 
@@ -55,6 +73,9 @@ class TransportStep {
     String? name,
     String? duration,
     String? type,
+    String? departureStop,
+    String? arrivalStop,
+    int? numStops,
   }) {
     return TransportStep(
       stepId: stepId ?? this.stepId,
@@ -62,13 +83,17 @@ class TransportStep {
       name: name ?? this.name,
       duration: duration ?? this.duration,
       type: type ?? this.type,
+      departureStop: departureStop ?? this.departureStop,
+      arrivalStop: arrivalStop ?? this.arrivalStop,
+      numStops: numStops ?? this.numStops,
     );
   }
 
   @override
   String toString() {
     return 'TransportStep(stepId: $stepId, icon: $icon, name: $name, '
-        'duration: $duration, type: $type)';
+        'duration: $duration, type: $type, departureStop: $departureStop, '
+        'arrivalStop: $arrivalStop, numStops: $numStops)';
   }
 
   @override
@@ -80,7 +105,10 @@ class TransportStep {
         other.icon == icon &&
         other.name == name &&
         other.duration == duration &&
-        other.type == type;
+        other.type == type &&
+        other.departureStop == departureStop &&
+        other.arrivalStop == arrivalStop &&
+        other.numStops == numStops;
   }
 
   @override
@@ -91,6 +119,9 @@ class TransportStep {
       name,
       duration,
       type,
+      departureStop,
+      arrivalStop,
+      numStops,
     );
   }
 }

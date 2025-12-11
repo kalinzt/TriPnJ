@@ -200,6 +200,7 @@ class DirectionsService {
         'mode': modeString,
         'key': _apiKey,
         'alternatives': 'true', // 여러 경로 옵션 요청
+        'language': 'ko', // 한글 응답
       });
 
       appLogger.i('경로 검색 요청: $origin → $destination ($modeString)');
@@ -255,10 +256,6 @@ class DirectionsService {
           // 출발지/도착지 주소 추출
           final startAddress = leg['start_address'] as String? ?? '';
           final endAddress = leg['end_address'] as String? ?? '';
-          final departureLocation = _extractCity(startAddress);
-          final arrivalLocation = _extractCity(endAddress);
-
-          appLogger.d('출발지: $departureLocation, 도착지: $arrivalLocation');
 
           // 도착 시간 정보 추출
           final arrivalTimeData = leg['arrival_time'] as Map<String, dynamic>?;
@@ -343,6 +340,25 @@ class DirectionsService {
                     final vehicle = line['vehicle'] as Map<String, dynamic>?;
                     final vehicleType = vehicle?['type'] as String?;
 
+                    // 노선 번호 추출 (shortName 우선, 예: "9호선", "740")
+                    String? routeNumber;
+                    if (shortName != null && shortName.isNotEmpty) {
+                      routeNumber = shortName;
+                    } else if (lineName != null && lineName.isNotEmpty) {
+                      // lineName에서 노선 번호 추출 시도
+                      // 예: "지하철 9호선" -> "9호선"
+                      routeNumber = lineName;
+                      // "지하철", "버스" 등의 접두어 제거
+                      final prefixes = ['지하철 ', '수도권전철 ', '버스 ', '트램 '];
+                      for (final prefix in prefixes) {
+                        if (routeNumber!.startsWith(prefix)) {
+                          routeNumber = routeNumber.substring(prefix.length);
+                          break;
+                        }
+                      }
+                    }
+
+                    // vehicleList에는 전체 설명 추가 (요약용)
                     String? vehicleDesc;
                     if (lineName != null) {
                       vehicleDesc = lineName;
@@ -359,10 +375,22 @@ class DirectionsService {
                       }
                     }
 
+                    // 경유지 정보 추출 (출발역 → 도착역)
+                    final departureStop =
+                        transitDetails['departure_stop'] as Map<String, dynamic>?;
+                    final arrivalStop =
+                        transitDetails['arrival_stop'] as Map<String, dynamic>?;
+                    final numStops = transitDetails['num_stops'] as int?;
+
+                    final departureStopName = departureStop?['name'] as String?;
+                    final arrivalStopName = arrivalStop?['name'] as String?;
+
                     // TransportStep 생성 (대중교통)
                     final stepDuration = stepMap['duration'] as Map<String, dynamic>?;
                     final durationText = stepDuration?['text'] as String? ?? '';
-                    final stepName = vehicleDesc ?? '버스';
+
+                    // UI에 표시될 이름은 노선 번호만 사용 (예: "9호선", "740")
+                    final stepName = routeNumber ?? vehicleDesc ?? '대중교통';
                     final icon = vehicleType != null
                         ? _mapVehicleTypeToIcon(vehicleType)
                         : 'transit';
@@ -373,31 +401,14 @@ class DirectionsService {
                       name: stepName,
                       duration: durationText,
                       type: 'transit',
+                      departureStop: departureStopName,
+                      arrivalStop: arrivalStopName,
+                      numStops: numStops,
                     ));
 
                     appLogger.d(
-                        'TransportStep 추가: $stepName ($icon) - $durationText');
-                  }
-
-                  // 경유지 정보 추출 (출발역 → 도착역)
-                  final departureStop =
-                      transitDetails['departure_stop'] as Map<String, dynamic>?;
-                  final arrivalStop =
-                      transitDetails['arrival_stop'] as Map<String, dynamic>?;
-                  final numStops = transitDetails['num_stops'] as int?;
-
-                  if (departureStop != null && arrivalStop != null) {
-                    final depName = departureStop['name'] as String?;
-                    final arrName = arrivalStop['name'] as String?;
-
-                    if (depName != null && arrName != null) {
-                      if (numStops != null && numStops > 0) {
-                        detailsList
-                            .add('$depName → $arrName ($numStops개 정거장)');
-                      } else {
-                        detailsList.add('$depName → $arrName');
-                      }
-                    }
+                        'TransportStep 추가: $stepName ($icon) - $durationText '
+                        '[출발: $departureStopName, 도착: $arrivalStopName, 정거장: $numStops개]');
                   }
 
                   // 환승 시간 정보
@@ -454,6 +465,28 @@ class DirectionsService {
             }
           }
 
+          // 출발지/도착지 정보 결정
+          // 대중교통 step에서 역 이름 추출 (도보 제외)
+          final transitSteps = transportSteps.where((step) => step.type == 'transit').toList();
+          String? departureLocation;
+          String? arrivalLocation;
+
+          if (transitSteps.isNotEmpty) {
+            // 대중교통 경로가 있으면 첫/마지막 역 이름 사용
+            departureLocation = transitSteps.first.departureStop;
+            arrivalLocation = transitSteps.last.arrivalStop;
+
+            appLogger.d('대중교통 경로 - 출발지: $departureLocation, 도착지: $arrivalLocation');
+          }
+
+          // transit에서 정보를 얻지 못했으면 주소에서 추출
+          if ((departureLocation == null || departureLocation.isEmpty) && startAddress.isNotEmpty) {
+            departureLocation = _extractCity(startAddress);
+          }
+          if ((arrivalLocation == null || arrivalLocation.isEmpty) && endAddress.isNotEmpty) {
+            arrivalLocation = _extractCity(endAddress);
+          }
+
           // RouteOption 객체 생성
           final routeOption = RouteOption(
             routeId: 'route_${i + 1}',
@@ -464,8 +497,8 @@ class DirectionsService {
             details: details,
             coordinates: coordinates,
             // 새로 추가된 필드들
-            departureLocation: departureLocation.isNotEmpty ? departureLocation : null,
-            arrivalLocation: arrivalLocation.isNotEmpty ? arrivalLocation : null,
+            departureLocation: departureLocation != null && departureLocation.isNotEmpty ? departureLocation : null,
+            arrivalLocation: arrivalLocation != null && arrivalLocation.isNotEmpty ? arrivalLocation : null,
             transportOptions: transportSteps.isNotEmpty ? transportSteps : null,
             estimatedArrivalTime: estimatedArrivalTime.isNotEmpty ? estimatedArrivalTime : null,
             delayedArrivalTime: null, // 지연 정보는 실시간 API가 필요하므로 null
