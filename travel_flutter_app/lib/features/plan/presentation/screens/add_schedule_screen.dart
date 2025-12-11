@@ -48,7 +48,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
   DateTime? _selectedDate;
   TimeOfDay _startTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 8, minute: 0);
-  String _selectedType = 'flight';
+  String _selectedType = 'transportation';
   TravelMode _selectedTravelMode = TravelMode.transit;
 
   // 경로 검색 상태

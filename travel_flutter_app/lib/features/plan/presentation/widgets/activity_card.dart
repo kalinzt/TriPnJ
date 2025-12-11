@@ -29,6 +29,25 @@ class ActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeFormat = DateFormat('HH:mm');
 
+    // 디버그: 경로 정보 확인
+    if (activity.type == ActivityType.transportation) {
+      Logger.info(
+        '교통 활동 카드 렌더링: '
+        'type=${activity.type}, '
+        'selectedRoute=${activity.selectedRoute != null ? "있음" : "없음"}',
+        'ActivityCard',
+      );
+      if (activity.selectedRoute != null) {
+        Logger.info(
+          '경로 정보: '
+          'departure=${activity.selectedRoute!.departureLocation}, '
+          'arrival=${activity.selectedRoute!.arrivalLocation}, '
+          'duration=${activity.selectedRoute!.durationMinutes}분',
+          'ActivityCard',
+        );
+      }
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: activity.isCompleted ? 1 : 2,

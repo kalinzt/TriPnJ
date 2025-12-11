@@ -926,6 +926,22 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
         selectedRoute: _selectedRoute,
       );
 
+      // 디버그: 저장할 활동 정보
+      Logger.info(
+        '활동 저장: type=${activity.type}, '
+        'selectedRoute=${activity.selectedRoute != null ? "있음" : "없음"}',
+        'AddActivityScreen',
+      );
+      if (activity.selectedRoute != null) {
+        Logger.info(
+          '경로 정보 저장: '
+          'departure=${activity.selectedRoute!.departureLocation}, '
+          'arrival=${activity.selectedRoute!.arrivalLocation}, '
+          'routeId=${activity.selectedRoute!.routeId}',
+          'AddActivityScreen',
+        );
+      }
+
       if (widget.activity == null) {
         // 새 활동 추가
         await ref.read(allTripsProvider.notifier).addActivity(

@@ -24,7 +24,7 @@ _$CachedRecommendationImpl _$$CachedRecommendationImplFromJson(
 Map<String, dynamic> _$$CachedRecommendationImplToJson(
         _$CachedRecommendationImpl instance) =>
     <String, dynamic>{
-      'places': instance.places,
+      'places': instance.places.map((e) => e.toJson()).toList(),
       'scores': instance.scores,
       'cachedAt': instance.cachedAt.toIso8601String(),
       'latitude': instance.latitude,

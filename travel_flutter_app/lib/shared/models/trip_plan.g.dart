@@ -35,7 +35,7 @@ Map<String, dynamic> _$$TripPlanImplToJson(_$TripPlanImpl instance) =>
       'destination': instance.destination,
       'destinationLatitude': instance.destinationLatitude,
       'destinationLongitude': instance.destinationLongitude,
-      'dailyPlans': instance.dailyPlans,
+      'dailyPlans': instance.dailyPlans.map((e) => e.toJson()).toList(),
       'memo': instance.memo,
       'budget': instance.budget,
       'thumbnailUrl': instance.thumbnailUrl,
@@ -58,7 +58,7 @@ Map<String, dynamic> _$$DailyPlanImplToJson(_$DailyPlanImpl instance) =>
     <String, dynamic>{
       'date': instance.date.toIso8601String(),
       'title': instance.title,
-      'activities': instance.activities,
+      'activities': instance.activities.map((e) => e.toJson()).toList(),
       'memo': instance.memo,
     };
 
@@ -93,14 +93,14 @@ Map<String, dynamic> _$$ActivityImplToJson(_$ActivityImpl instance) =>
       'startTime': instance.startTime?.toIso8601String(),
       'endTime': instance.endTime?.toIso8601String(),
       'durationMinutes': instance.durationMinutes,
-      'place': instance.place,
+      'place': instance.place?.toJson(),
       'title': instance.title,
       'type': _$ActivityTypeEnumMap[instance.type]!,
       'memo': instance.memo,
       'estimatedCost': instance.estimatedCost,
       'reservationInfo': instance.reservationInfo,
       'isCompleted': instance.isCompleted,
-      'selectedRoute': instance.selectedRoute,
+      'selectedRoute': instance.selectedRoute?.toJson(),
     };
 
 const _$ActivityTypeEnumMap = {
