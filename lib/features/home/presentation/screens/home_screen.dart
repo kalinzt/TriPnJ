@@ -17,7 +17,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Welcome to Travel Planner',
               style: AppTextStyles.headline2,
             ),
