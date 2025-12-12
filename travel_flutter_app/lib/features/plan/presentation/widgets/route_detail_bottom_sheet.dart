@@ -24,15 +24,18 @@ class RouteDetailBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.5,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
@@ -42,7 +45,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: colors.border,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -57,7 +60,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
                         children: [
                           Text(
                             '경로 상세 정보',
-                            style: AppTextStyles.titleLarge.copyWith(
+                            style: textStyles.heading4.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -67,13 +70,13 @@ class RouteDetailBottomSheet extends StatelessWidget {
                               Icon(
                                 Icons.access_time,
                                 size: 16,
-                                color: AppColors.primary,
+                                color: colors.primary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '약 ${route.durationMinutes}분',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.primary,
+                                style: textStyles.bodyMedium.copyWith(
+                                  color: colors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -81,13 +84,13 @@ class RouteDetailBottomSheet extends StatelessWidget {
                               Icon(
                                 Icons.straighten,
                                 size: 16,
-                                color: AppColors.textSecondary,
+                                color: colors.textSecondary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 route.distance,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
+                                style: textStyles.bodyMedium.copyWith(
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -108,7 +111,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
                 child: ListView(
                   controller: scrollController,
                   padding: const EdgeInsets.all(16),
-                  children: _buildDetailedTimeline(),
+                  children: _buildDetailedTimeline(context),
                 ),
               ),
             ],
@@ -119,7 +122,8 @@ class RouteDetailBottomSheet extends StatelessWidget {
   }
 
   /// 상세 타임라인 생성 (출발역 → 교통수단 → 도착역 → 환승...)
-  List<Widget> _buildDetailedTimeline() {
+  List<Widget> _buildDetailedTimeline(BuildContext context) {
+    final colors = AppColors.of(context);
     final List<Widget> timeline = [];
     final steps = route.transportOptions ?? [];
 
@@ -127,8 +131,9 @@ class RouteDetailBottomSheet extends StatelessWidget {
       // 교통 수단 정보가 없으면 기본 출발지/도착지만 표시
       if (route.departureLocation != null) {
         timeline.add(_buildTimelineItem(
+          context: context,
           icon: Icons.trip_origin,
-          iconColor: AppColors.primary,
+          iconColor: colors.primary,
           title: route.departureLocation!,
           isFirst: true,
           isLast: route.arrivalLocation == null,
@@ -136,8 +141,9 @@ class RouteDetailBottomSheet extends StatelessWidget {
       }
       if (route.arrivalLocation != null) {
         timeline.add(_buildTimelineItem(
+          context: context,
           icon: Icons.location_on,
-          iconColor: Colors.red,
+          iconColor: colors.error,
           title: route.arrivalLocation!,
           isFirst: route.departureLocation == null,
           isLast: true,
@@ -154,12 +160,14 @@ class RouteDetailBottomSheet extends StatelessWidget {
       final step = transitSteps[i];
       final isFirst = i == 0;
       final isLast = i == transitSteps.length - 1;
+      final transferColor = const Color(0xFFFF9800); // Orange
 
       // 출발역 표시
       if (step.departureStop != null) {
         timeline.add(_buildTimelineItem(
+          context: context,
           icon: Icons.trip_origin,
-          iconColor: isFirst ? AppColors.primary : Colors.grey,
+          iconColor: isFirst ? colors.primary : colors.textSecondary,
           title: step.departureStop!,
           isFirst: isFirst,
           isLast: false,
@@ -167,25 +175,27 @@ class RouteDetailBottomSheet extends StatelessWidget {
       }
 
       // 교통 수단 뱃지
-      timeline.add(_buildTransportStep(step));
+      timeline.add(_buildTransportStep(context, step));
 
       // 도착역 표시
       if (step.arrivalStop != null) {
+        final textStyles = AppTextStyles.of(context);
         timeline.add(_buildTimelineItem(
+          context: context,
           icon: isLast ? Icons.location_on : Icons.swap_horiz,
-          iconColor: isLast ? Colors.red : Colors.orange,
+          iconColor: isLast ? colors.error : transferColor,
           title: step.arrivalStop!,
           trailing: isLast ? null : Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.15),
+              color: transferColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.orange.withValues(alpha: 0.4), width: 1),
+              border: Border.all(color: transferColor.withValues(alpha: 0.4), width: 1),
             ),
             child: Text(
               '환승',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Colors.orange,
+              style: textStyles.bodySmall.copyWith(
+                color: transferColor,
                 fontWeight: FontWeight.w600,
                 fontSize: 11,
               ),
@@ -202,6 +212,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
 
   /// 타임라인 아이템
   Widget _buildTimelineItem({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -209,6 +220,9 @@ class RouteDetailBottomSheet extends StatelessWidget {
     bool isFirst = false,
     bool isLast = false,
   }) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +237,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
                   Container(
                     width: 2,
                     height: 16,
-                    color: Colors.grey[300],
+                    color: colors.border,
                   ),
                 // 아이콘
                 Container(
@@ -241,7 +255,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
                   Expanded(
                     child: Container(
                       width: 2,
-                      color: Colors.grey[300],
+                      color: colors.border,
                     ),
                   ),
               ],
@@ -260,7 +274,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    style: textStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -278,7 +292,10 @@ class RouteDetailBottomSheet extends StatelessWidget {
   }
 
   /// 교통 수단 단계 (타임라인 스타일)
-  Widget _buildTransportStep(step) {
+  Widget _buildTransportStep(BuildContext context, step) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     Color badgeColor;
     IconData icon;
 
@@ -309,7 +326,7 @@ class RouteDetailBottomSheet extends StatelessWidget {
         icon = Icons.directions_boat;
         break;
       default:
-        badgeColor = AppColors.primary;
+        badgeColor = colors.primary;
         icon = Icons.directions_transit;
     }
 
@@ -320,13 +337,14 @@ class RouteDetailBottomSheet extends StatelessWidget {
     }
 
     return _buildTimelineItem(
+      context: context,
       icon: icon,
       iconColor: badgeColor,
       title: step.name,
       trailing: Text(
         durationText,
-        style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textSecondary,
+        style: textStyles.bodySmall.copyWith(
+          color: colors.textSecondary,
         ),
       ),
     );

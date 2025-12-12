@@ -387,9 +387,9 @@ class _EditDiaryEntryScreenState extends State<EditDiaryEntryScreen> {
                             right: 0,
                             child: Container(
                               padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: Colors.black54,
-                                borderRadius: const BorderRadius.only(
+                                borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(8),
                                   bottomRight: Radius.circular(8),
                                 ),

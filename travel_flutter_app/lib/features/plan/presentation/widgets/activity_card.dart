@@ -27,6 +27,9 @@ class ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final timeFormat = DateFormat('HH:mm');
 
     // 디버그: 경로 정보 확인
@@ -54,7 +57,7 @@ class ActivityCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: activity.isCompleted
-            ? BorderSide(color: AppColors.success.withValues(alpha: 0.3))
+            ? BorderSide(color: colors.success.withValues(alpha: 0.3))
             : BorderSide.none,
       ),
       child: InkWell(
@@ -72,7 +75,7 @@ class ActivityCard extends StatelessWidget {
                   child: Checkbox(
                     value: activity.isCompleted,
                     onChanged: (_) => onToggleComplete?.call(),
-                    activeColor: AppColors.success,
+                    activeColor: colors.success,
                   ),
                 ),
 
@@ -81,7 +84,7 @@ class ActivityCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: activity.type.color.withValues(alpha: 0.1),
+                  color: activity.type.getColor(context).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -102,18 +105,18 @@ class ActivityCard extends StatelessWidget {
                     if (activity.startTime != null)
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.access_time,
                             size: 14,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             activity.endTime != null
                                 ? '${timeFormat.format(activity.startTime!)} - ${timeFormat.format(activity.endTime!)}'
                                 : timeFormat.format(activity.startTime!),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                            style: textStyles.bodySmall.copyWith(
+                              color: colors.textSecondary,
                               decoration: activity.isCompleted
                                   ? TextDecoration.lineThrough
                                   : null,
@@ -123,8 +126,8 @@ class ActivityCard extends StatelessWidget {
                             const SizedBox(width: 8),
                             Text(
                               '${activity.durationMinutes}분',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.primary,
+                              style: textStyles.bodySmall.copyWith(
+                                color: colors.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -136,7 +139,7 @@ class ActivityCard extends StatelessWidget {
                     // 제목 또는 장소 이름
                     Text(
                       activity.place?.name ?? activity.title ?? '활동',
-                      style: AppTextStyles.bodyMedium.copyWith(
+                      style: textStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         decoration: activity.isCompleted
                             ? TextDecoration.lineThrough
@@ -150,8 +153,8 @@ class ActivityCard extends StatelessWidget {
                     // 활동 유형
                     Text(
                       activity.type.displayName,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: activity.type.color,
+                      style: textStyles.bodySmall.copyWith(
+                        color: activity.type.getColor(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -161,17 +164,17 @@ class ActivityCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.location_on,
                             size: 14,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               activity.place!.address,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
+                              style: textStyles.bodySmall.copyWith(
+                                color: colors.textSecondary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -186,8 +189,8 @@ class ActivityCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         activity.memo!,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                        style: textStyles.bodySmall.copyWith(
+                          color: colors.textSecondary,
                           fontStyle: FontStyle.italic,
                         ),
                         maxLines: 2,
@@ -200,16 +203,16 @@ class ActivityCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.payments,
                             size: 14,
-                            color: AppColors.warning,
+                            color: colors.warning,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${NumberFormat('#,###').format(activity.estimatedCost)}원',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.warning,
+                            style: textStyles.bodySmall.copyWith(
+                              color: colors.warning,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -227,23 +230,23 @@ class ActivityCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.info.withValues(alpha: 0.1),
+                          color: colors.info.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.confirmation_number,
                               size: 12,
-                              color: AppColors.info,
+                              color: colors.info,
                             ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
                                 activity.reservationInfo!,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.info,
+                                style: textStyles.bodySmall.copyWith(
+                                  color: colors.info,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -260,7 +263,7 @@ class ActivityCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       const Divider(height: 1),
                       const SizedBox(height: 8),
-                      _buildRouteInfo(activity.selectedRoute!),
+                      _buildRouteInfo(context, activity.selectedRoute!),
                     ],
                   ],
                 ),
@@ -275,7 +278,7 @@ class ActivityCard extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.map),
                       iconSize: 20,
-                      color: AppColors.primary,
+                      color: colors.primary,
                       onPressed: () => _openMap(context),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -286,7 +289,7 @@ class ActivityCard extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit),
                       iconSize: 20,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       onPressed: onEdit,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -297,7 +300,7 @@ class ActivityCard extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.delete),
                       iconSize: 20,
-                      color: AppColors.error,
+                      color: colors.error,
                       onPressed: () => _confirmDelete(context),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -305,10 +308,10 @@ class ActivityCard extends StatelessWidget {
 
                   // 재정렬 핸들
                   if (isReorderable)
-                    const Icon(
+                    Icon(
                       Icons.drag_handle,
                       size: 20,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                 ],
               ),
@@ -337,10 +340,11 @@ class ActivityCard extends StatelessWidget {
     } catch (e, stackTrace) {
       Logger.error('지도 열기 실패', e, stackTrace, 'ActivityCard');
       if (context.mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('지도를 열 수 없습니다'),
-            backgroundColor: AppColors.error,
+          SnackBar(
+            content: const Text('지도를 열 수 없습니다'),
+            backgroundColor: colors.error,
           ),
         );
       }
@@ -349,6 +353,7 @@ class ActivityCard extends StatelessWidget {
 
   /// 삭제 확인 다이얼로그
   void _confirmDelete(BuildContext context) {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -366,9 +371,9 @@ class ActivityCard extends StatelessWidget {
               Navigator.pop(context);
               onDelete?.call();
             },
-            child: const Text(
+            child: Text(
               '삭제',
-              style: TextStyle(color: AppColors.error),
+              style: TextStyle(color: colors.error),
             ),
           ),
         ],
@@ -377,44 +382,47 @@ class ActivityCard extends StatelessWidget {
   }
 
   /// 경로 정보 위젯
-  Widget _buildRouteInfo(RouteOption route) {
+  Widget _buildRouteInfo(BuildContext context, RouteOption route) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 경로 요약 (출발지 > 도착지)
         if (route.departureLocation != null && route.arrivalLocation != null)
-          _buildRouteSummary(route),
+          _buildRouteSummary(context, route),
 
         // 경로 단계 (교통 수단별)
         if (route.transportOptions != null && route.transportOptions!.isNotEmpty)
-          _buildTransportSteps(route.transportOptions!),
+          _buildTransportSteps(context, route.transportOptions!),
 
         // 도착 시간 정보
         if (route.estimatedArrivalTime != null || route.delayedArrivalTime != null)
-          _buildArrivalTimeInfo(route),
+          _buildArrivalTimeInfo(context, route),
 
         // 출발 정보
-        if (route.departureNote != null) _buildDepartureNote(route.departureNote!),
+        if (route.departureNote != null) _buildDepartureNote(context, route.departureNote!),
       ],
     );
   }
 
   /// 경로 요약 (출발지 > 도착지)
-  Widget _buildRouteSummary(RouteOption route) {
+  Widget _buildRouteSummary(BuildContext context, RouteOption route) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.location_on,
             size: 14,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(width: 4),
           Text(
             '${route.departureLocation} → ${route.arrivalLocation}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+            style: textStyles.bodySmall.copyWith(
+              color: colors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -424,7 +432,10 @@ class ActivityCard extends StatelessWidget {
   }
 
   /// 경로 단계들 (교통 수단별)
-  Widget _buildTransportSteps(List<TransportStep> steps) {
+  Widget _buildTransportSteps(BuildContext context, List<TransportStep> steps) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Wrap(
@@ -439,11 +450,11 @@ class ActivityCard extends StatelessWidget {
                 if (index > 0)
                   Text(
                     ' • ',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                    style: textStyles.bodySmall.copyWith(
+                      color: colors.textSecondary,
                     ),
                   ),
-                _buildTransportStepWidget(step),
+                _buildTransportStepWidget(context, step),
               ],
             );
           }),
@@ -453,11 +464,14 @@ class ActivityCard extends StatelessWidget {
   }
 
   /// 개별 TransportStep 위젯
-  Widget _buildTransportStepWidget(TransportStep step) {
+  Widget _buildTransportStepWidget(BuildContext context, TransportStep step) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: colors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
@@ -466,13 +480,13 @@ class ActivityCard extends StatelessWidget {
           Icon(
             _getTransportIcon(step.icon),
             size: 14,
-            color: AppColors.primary,
+            color: colors.primary,
           ),
           const SizedBox(width: 4),
           Text(
             '${step.name} (${step.duration})',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.primary,
+            style: textStyles.bodySmall.copyWith(
+              color: colors.primary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -482,7 +496,10 @@ class ActivityCard extends StatelessWidget {
   }
 
   /// 도착 시간 정보
-  Widget _buildArrivalTimeInfo(RouteOption route) {
+  Widget _buildArrivalTimeInfo(BuildContext context, RouteOption route) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Column(
@@ -491,16 +508,16 @@ class ActivityCard extends StatelessWidget {
           if (route.estimatedArrivalTime != null)
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.schedule,
                   size: 14,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '도착: ${route.estimatedArrivalTime}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                  style: textStyles.bodySmall.copyWith(
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -509,16 +526,16 @@ class ActivityCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.warning,
                   size: 14,
-                  color: AppColors.warning,
+                  color: colors.warning,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '지연: ${route.delayedArrivalTime}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.warning,
+                  style: textStyles.bodySmall.copyWith(
+                    color: colors.warning,
                   ),
                 ),
               ],
@@ -530,22 +547,25 @@ class ActivityCard extends StatelessWidget {
   }
 
   /// 출발 정보
-  Widget _buildDepartureNote(String note) {
+  Widget _buildDepartureNote(BuildContext context, String note) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline,
             size: 14,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
               note,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodySmall.copyWith(
+                color: colors.textSecondary,
                 fontStyle: FontStyle.italic,
               ),
               maxLines: 1,
@@ -582,26 +602,29 @@ class ActivityCard extends StatelessWidget {
   }
 }
 
-/// ActivityType 확장 - 색상 추가
+/// ActivityType 확장 - 테마 기반 색상
 extension ActivityTypeColor on ActivityType {
-  Color get color {
+  /// 활동 유형별 테마 기반 색상 반환
+  Color getColor(BuildContext context) {
+    final colors = AppColors.of(context);
+
     switch (this) {
       case ActivityType.visit:
-        return AppColors.primary;
+        return colors.primary;
       case ActivityType.meal:
-        return AppColors.warning;
+        return colors.warning;
       case ActivityType.accommodation:
-        return AppColors.info;
+        return colors.info;
       case ActivityType.transportation:
-        return AppColors.textSecondary;
+        return colors.textSecondary;
       case ActivityType.shopping:
         return const Color(0xFFE91E63);
       case ActivityType.activity:
-        return AppColors.success;
+        return colors.success;
       case ActivityType.rest:
         return const Color(0xFF9C27B0);
       case ActivityType.other:
-        return AppColors.textSecondary;
+        return colors.textSecondary;
     }
   }
 }

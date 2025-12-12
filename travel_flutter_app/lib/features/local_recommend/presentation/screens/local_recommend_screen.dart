@@ -134,19 +134,22 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final state = ref.watch(recommendationProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text('맞춤 추천'),
-        backgroundColor: Colors.white,
+        backgroundColor: colors.surface,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
+          labelColor: colors.primary,
+          unselectedLabelColor: colors.textSecondary,
+          indicatorColor: colors.primary,
           tabs: const [
             Tab(
               icon: Icon(Icons.list),
@@ -164,7 +167,7 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
             icon: Icon(
               _showFavoritesOnly ? Icons.favorite : Icons.favorite_border,
             ),
-            color: _showFavoritesOnly ? AppColors.primary : null,
+            color: _showFavoritesOnly ? colors.primary : null,
             tooltip: '즐겨찾기만 보기',
             onPressed: _toggleFavoritesFilter,
           ),
@@ -183,8 +186,8 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
                   top: 8,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
+                    decoration: BoxDecoration(
+                      color: colors.primary,
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(
@@ -220,17 +223,16 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              color: Colors.orange.shade100,
+              color: colors.warning.withValues(alpha: 0.1),
               child: Row(
                 children: [
-                  Icon(Icons.cloud_off, size: 16, color: Colors.orange.shade900),
+                  Icon(Icons.cloud_off, size: 16, color: colors.warning),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '오프라인 모드 - 캐시된 데이터를 표시합니다',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.orange.shade900,
+                      style: textStyles.bodySmall.copyWith(
+                        color: colors.warning,
                       ),
                     ),
                   ),
@@ -347,15 +349,17 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   /// 로딩 뷰
   Widget _buildLoadingView() {
-    return const Center(
+    final textStyles = AppTextStyles.of(context);
+
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
           Text(
             '맞춤 추천을 생성하고 있습니다...',
-            style: AppTextStyles.bodyMedium,
+            style: textStyles.bodyMedium,
           ),
         ],
       ),
@@ -364,29 +368,32 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   /// 에러 뷰
   Widget _buildErrorView(String errorMessage) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 64,
-              color: AppColors.error,
+              color: colors.error,
             ),
             const SizedBox(height: 16),
             Text(
               '오류가 발생했습니다',
-              style: AppTextStyles.titleMedium.copyWith(
+              style: textStyles.heading4.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               errorMessage,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -396,8 +403,8 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
               icon: const Icon(Icons.refresh),
               label: const Text('재시도'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: colors.primary,
+                foregroundColor: colors.surface,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
@@ -409,6 +416,9 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   /// 빈 상태 뷰
   Widget _buildEmptyView() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -418,20 +428,20 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
             Icon(
               Icons.explore_outlined,
               size: 80,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: colors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
             Text(
               '아직 충분한 데이터가 없습니다',
-              style: AppTextStyles.titleMedium.copyWith(
+              style: textStyles.heading4.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               '여행 계획을 만들고 장소를 탐색하면\n맞춤 추천을 받을 수 있습니다',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -441,8 +451,8 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
               icon: const Icon(Icons.explore),
               label: const Text('인기 장소 탐색하기'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: colors.primary,
+                foregroundColor: colors.surface,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
@@ -454,6 +464,9 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   /// 빈 즐겨찾기 뷰
   Widget _buildEmptyFavoritesView() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -463,20 +476,20 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
             Icon(
               Icons.favorite_border,
               size: 80,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: colors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
             Text(
               '즐겨찾기한 장소가 없습니다',
-              style: AppTextStyles.titleMedium.copyWith(
+              style: textStyles.heading4.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               '추천 장소의 하트 아이콘을 눌러\n즐겨찾기에 추가해보세요',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -488,14 +501,17 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
 
   /// "더 보기" 버튼
   Widget _buildLoadMoreButton(RecommendationState state) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     // 더 이상 없으면 표시 안 함
     if (!state.hasMore) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
+      return Padding(
+        padding: const EdgeInsets.all(16),
         child: Center(
           child: Text(
             '모든 추천을 확인했습니다',
-            style: AppTextStyles.bodySmall,
+            style: textStyles.bodySmall,
           ),
         ),
       );
@@ -520,8 +536,8 @@ class _LocalRecommendScreenState extends ConsumerState<LocalRecommendScreen>
           icon: const Icon(Icons.add),
           label: const Text('더 보기'),
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            side: const BorderSide(color: AppColors.primary),
+            foregroundColor: colors.primary,
+            side: BorderSide(color: colors.primary),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
         ),

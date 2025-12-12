@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../data/models/travel_plan_model.dart';
 import '../../data/models/daily_schedule_model.dart';
 import '../../data/models/activity_model.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_text_styles.dart';
 
 /// 타임테이블 뷰 화면
 class PlanTimetableScreen extends StatefulWidget {
@@ -52,21 +54,23 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
   }
 
 
-  /// 타입별 색상
-  Color _getActivityColor(String type) {
+  /// 타입별 색상 (테마 기반)
+  Color _getActivityColor(BuildContext context, String type) {
+    final colors = AppColors.of(context);
+
     switch (type) {
       case 'flight':
         return const Color(0xFF2196F3);
       case 'accommodation':
-        return const Color(0xFF4CAF50);
+        return colors.success;
       case 'tour':
-        return const Color(0xFFFF9800);
+        return colors.warning;
       case 'restaurant':
         return const Color(0xFFE91E63);
       case 'activity':
         return const Color(0xFF9C27B0);
       default:
-        return Colors.grey;
+        return colors.textSecondary;
     }
   }
 
@@ -92,11 +96,11 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
   void _showActivityDetail(Activity activity) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             Icon(_getActivityIcon(activity.type),
-                color: _getActivityColor(activity.type)),
+                color: _getActivityColor(dialogContext, activity.type)),
             const SizedBox(width: 8),
             Expanded(child: Text(activity.title)),
           ],
@@ -106,17 +110,17 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow('시간',
+              _buildDetailRow(dialogContext, '시간',
                   '${_formatTime(activity.startTime)} - ${_formatTime(activity.endTime)}'),
               if (activity.departureLocation != null)
-                _buildDetailRow('출발지', activity.departureLocation!),
+                _buildDetailRow(dialogContext, '출발지', activity.departureLocation!),
               if (activity.arrivalLocation != null)
-                _buildDetailRow('도착지', activity.arrivalLocation!),
+                _buildDetailRow(dialogContext, '도착지', activity.arrivalLocation!),
               if (activity.transportation != null)
-                _buildDetailRow('교통편', activity.transportation!),
-              if (activity.cost != null) _buildDetailRow('비용', activity.cost!),
+                _buildDetailRow(dialogContext, '교통편', activity.transportation!),
+              if (activity.cost != null) _buildDetailRow(dialogContext, '비용', activity.cost!),
               if (activity.notes != null)
-                _buildDetailRow('비고', activity.notes!),
+                _buildDetailRow(dialogContext, '비고', activity.notes!),
             ],
           ),
         ),
@@ -130,7 +134,10 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -140,14 +147,19 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
             width: 60,
             child: Text(
               label,
-              style: const TextStyle(
+              style: textStyles.bodySmall.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                color: colors.textSecondary,
               ),
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Text(
+              value,
+              style: textStyles.bodyMedium,
+            ),
+          ),
         ],
       ),
     );
@@ -159,6 +171,10 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     // 선택된 날짜의 DailySchedule 찾기
     DailySchedule? schedule;
     for (var s in widget.dailySchedules) {
@@ -178,8 +194,13 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
         Expanded(
           child: schedule != null && schedule.activities.isNotEmpty
               ? _buildTimeline(schedule.sortedActivities)
-              : const Center(
-                  child: Text('이 날짜에는 일정이 없습니다'),
+              : Center(
+                  child: Text(
+                    '이 날짜에는 일정이 없습니다',
+                    style: textStyles.bodyMedium.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
                 ),
         ),
       ],
@@ -188,6 +209,8 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
 
   /// 날짜 선택기
   Widget _buildDateSelector() {
+    final textStyles = AppTextStyles.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -201,8 +224,7 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
             child: Text(
               '${_selectedDate.year}년 ${_selectedDate.month}월 ${_selectedDate.day}일',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
+              style: textStyles.labelLarge.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -240,6 +262,9 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
 
   /// 시간 눈금
   Widget _buildTimeMarkers() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       children: List.generate(_endHour - _startHour, (index) {
         final hour = _startHour + index;
@@ -251,17 +276,16 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
                 width: 60,
                 child: Text(
                   '${hour.toString().padLeft(2, '0')}:00',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+                  style: textStyles.bodySmall.copyWith(
+                    color: colors.textSecondary,
                   ),
                 ),
               ),
               Expanded(
                 child: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border: Border(
-                      top: BorderSide(color: Colors.grey, width: 0.5),
+                      top: BorderSide(color: colors.border, width: 0.5),
                     ),
                   ),
                 ),
@@ -297,11 +321,11 @@ class _PlanTimetableScreenState extends State<PlanTimetableScreen> {
           margin: const EdgeInsets.only(right: 8, bottom: 4),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: _getActivityColor(activity.type).withValues(alpha: 0.8),
+            color: _getActivityColor(context, activity.type).withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: AppColors.of(context).textPrimary.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),

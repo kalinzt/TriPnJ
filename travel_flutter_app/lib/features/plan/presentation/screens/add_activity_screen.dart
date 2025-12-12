@@ -95,20 +95,23 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.activity == null ? '활동 추가' : '활동 수정'),
         actions: [
           if (_isLoading)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(colors.surface),
                   ),
                 ),
               ),
@@ -116,11 +119,10 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
           else
             TextButton(
               onPressed: _saveActivity,
-              child: const Text(
+              child: Text(
                 '저장',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
+                style: textStyles.bodyLarge.copyWith(
+                  color: colors.surface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -133,22 +135,23 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             // 날짜 표시
-            _buildDateHeader(),
+            _buildDateHeader(context),
             const SizedBox(height: 24),
 
             // 활동 유형 선택
-            _buildSectionTitle('활동 유형'),
+            _buildSectionTitle(context, '활동 유형'),
             const SizedBox(height: 8),
             _buildActivityTypeSelector(),
             const SizedBox(height: 24),
 
             // 시간 선택
-            _buildSectionTitle('시간'),
+            _buildSectionTitle(context, '시간'),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: _buildTimeSelector(
+                    context,
                     label: '시작 시간',
                     time: _startTime,
                     onTap: () => _selectTime(isStartTime: true),
@@ -157,6 +160,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildTimeSelector(
+                    context,
                     label: '종료 시간',
                     time: _endTime,
                     onTap: () => _selectTime(isStartTime: false),
@@ -167,15 +171,15 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
             const SizedBox(height: 24),
 
             // 소요 시간 (선택사항)
-            _buildSectionTitle('소요 시간 (선택사항)'),
+            _buildSectionTitle(context, '소요 시간 (선택사항)'),
             const SizedBox(height: 8),
             TextFormField(
               controller: _durationController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '예상 소요 시간',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colors.surface,
                 suffixText: '분',
               ),
               keyboardType: TextInputType.number,
@@ -183,14 +187,14 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
             const SizedBox(height: 24),
 
             // 장소 선택
-            _buildSectionTitle('장소'),
+            _buildSectionTitle(context, '장소'),
             const SizedBox(height: 8),
-            _buildPlaceSelector(),
+            _buildPlaceSelector(context),
             const SizedBox(height: 24),
 
             // 경로 검색 (교통 타입일 때만 표시)
             if (_selectedType == ActivityType.transportation) ...[
-              _buildSectionTitle('경로 검색'),
+              _buildSectionTitle(context, '경로 검색'),
               const SizedBox(height: 8),
               _buildRouteSearchSection(),
               const SizedBox(height: 24),
@@ -198,15 +202,15 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
             // 활동 제목 (장소가 없을 때 필수)
             if (_selectedPlace == null) ...[
-              _buildSectionTitle('활동 제목'),
+              _buildSectionTitle(context, '활동 제목'),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '예: 자유 시간',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: colors.surface,
                 ),
                 validator: (value) {
                   if (_selectedPlace == null &&
@@ -220,30 +224,30 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
             ],
 
             // 메모 (선택사항)
-            _buildSectionTitle('메모 (선택사항)'),
+            _buildSectionTitle(context, '메모 (선택사항)'),
             const SizedBox(height: 8),
             TextFormField(
               controller: _memoController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '활동에 대한 메모를 입력하세요',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colors.surface,
               ),
               maxLines: 3,
             ),
             const SizedBox(height: 24),
 
             // 예상 비용 (선택사항)
-            _buildSectionTitle('예상 비용 (선택사항)'),
+            _buildSectionTitle(context, '예상 비용 (선택사항)'),
             const SizedBox(height: 8),
             TextFormField(
               controller: _costController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '예상 비용',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colors.surface,
                 suffixText: '원',
               ),
               keyboardType: TextInputType.number,
@@ -251,15 +255,15 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
             const SizedBox(height: 24),
 
             // 예약 정보 (선택사항)
-            _buildSectionTitle('예약 정보 (선택사항)'),
+            _buildSectionTitle(context, '예약 정보 (선택사항)'),
             const SizedBox(height: 8),
             TextFormField(
               controller: _reservationController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '예: 예약 번호 123456',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: colors.surface,
               ),
             ),
             const SizedBox(height: 32),
@@ -271,27 +275,26 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _saveActivity,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.textSecondary,
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.surface,
+                  disabledBackgroundColor: colors.textSecondary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: _isLoading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                              AlwaysStoppedAnimation<Color>(colors.surface),
                         ),
                       )
-                    : const Text(
+                    : Text(
                         '저장',
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: textStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -304,22 +307,25 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
   }
 
   /// 날짜 헤더
-  Widget _buildDateHeader() {
+  Widget _buildDateHeader(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final dateFormat = DateFormat('yyyy년 MM월 dd일 (E)', 'ko');
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: colors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          const Icon(Icons.calendar_today, color: AppColors.primary),
+          Icon(Icons.calendar_today, color: colors.primary),
           const SizedBox(width: 12),
           Text(
             dateFormat.format(widget.date),
-            style: AppTextStyles.titleSmall.copyWith(
-              color: AppColors.primary,
+            style: textStyles.labelLarge.copyWith(
+              color: colors.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -329,10 +335,12 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
   }
 
   /// 섹션 제목
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    final textStyles = AppTextStyles.of(context);
+
     return Text(
       title,
-      style: AppTextStyles.titleSmall.copyWith(
+      style: textStyles.labelLarge.copyWith(
         fontWeight: FontWeight.bold,
       ),
     );
@@ -360,50 +368,54 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
               _selectedType = type;
             });
           },
-          selectedColor: type.color.withValues(alpha: 0.2),
-          checkmarkColor: type.color,
+          selectedColor: type.getColor(context).withValues(alpha: 0.2),
+          checkmarkColor: type.getColor(context),
         );
       }).toList(),
     );
   }
 
   /// 시간 선택 위젯
-  Widget _buildTimeSelector({
+  Widget _buildTimeSelector(
+    BuildContext context, {
     required String label,
     required TimeOfDay? time,
     required VoidCallback onTap,
   }) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
           borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
+          color: colors.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodySmall.copyWith(
+                color: colors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.access_time,
                   size: 18,
-                  color: AppColors.primary,
+                  color: colors.primary,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   time != null ? time.format(context) : '시간 선택',
-                  style: AppTextStyles.bodyMedium,
+                  style: textStyles.bodyMedium,
                 ),
               ],
             ),
@@ -414,11 +426,13 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
   }
 
   /// 장소 선택 위젯
-  Widget _buildPlaceSelector() {
+  Widget _buildPlaceSelector(BuildContext context) {
+    final colors = AppColors.of(context);
+
     if (_selectedPlace != null) {
       return Card(
         child: ListTile(
-          leading: const Icon(Icons.place, color: AppColors.primary),
+          leading: Icon(Icons.place, color: colors.primary),
           title: Text(_selectedPlace!.name),
           subtitle: Text(
             _selectedPlace!.address,
@@ -450,6 +464,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
   /// 시간 선택
   Future<void> _selectTime({required bool isStartTime}) async {
+    final colors = AppColors.of(context);
     final initialTime = isStartTime
         ? (_startTime ?? const TimeOfDay(hour: 9, minute: 0))
         : (_endTime ?? _startTime ?? const TimeOfDay(hour: 9, minute: 0));
@@ -460,8 +475,8 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
+            colorScheme: ColorScheme.light(
+              primary: colors.primary,
             ),
           ),
           child: child!,
@@ -498,6 +513,9 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
   /// 경로 검색 섹션 위젯
   Widget _buildRouteSearchSection() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -522,7 +540,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
         if (_selectedRoute != null) ...[
           const SizedBox(height: 12),
           Card(
-            color: AppColors.primary.withValues(alpha: 0.05),
+            color: colors.primary.withValues(alpha: 0.05),
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -530,16 +548,16 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.check_circle,
-                        color: AppColors.success,
+                        color: colors.success,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '경로 선택됨',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.success,
+                        style: textStyles.bodySmall.copyWith(
+                          color: colors.success,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -562,15 +580,15 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                       _selectedRoute!.arrivalLocation != null)
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_on,
                           size: 14,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${_selectedRoute!.departureLocation} → ${_selectedRoute!.arrivalLocation}',
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: textStyles.bodySmall.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -580,26 +598,26 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                   // 소요 시간 및 거리
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.access_time,
                         size: 14,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${_selectedRoute!.durationMinutes}분',
-                        style: AppTextStyles.bodySmall,
+                        style: textStyles.bodySmall,
                       ),
                       const SizedBox(width: 16),
-                      const Icon(
+                      Icon(
                         Icons.straighten,
                         size: 14,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         _selectedRoute!.distance,
-                        style: AppTextStyles.bodySmall,
+                        style: textStyles.bodySmall,
                       ),
                     ],
                   ),
@@ -618,13 +636,13 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  color: colors.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   step.name,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.primary,
+                                  style: textStyles.bodySmall.copyWith(
+                                    color: colors.primary,
                                     fontSize: 11,
                                   ),
                                 ),
@@ -643,12 +661,14 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
   /// 경로 검색
   Future<void> _searchRoute() async {
+    final colors = AppColors.of(context);
+
     // 출발지와 도착지가 필요함
     if (_selectedPlace == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('먼저 도착 장소를 선택해주세요'),
-          backgroundColor: AppColors.warning,
+        SnackBar(
+          content: const Text('먼저 도착 장소를 선택해주세요'),
+          backgroundColor: colors.warning,
         ),
       );
       return;
@@ -680,10 +700,11 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
       if (routes.isEmpty) {
         if (mounted) {
+          final colors = AppColors.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('경로를 찾을 수 없습니다'),
-              backgroundColor: AppColors.warning,
+            SnackBar(
+              content: const Text('경로를 찾을 수 없습니다'),
+              backgroundColor: colors.warning,
             ),
           );
         }
@@ -701,10 +722,11 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
     } catch (e, stackTrace) {
       Logger.error('경로 검색 실패', e, stackTrace, 'AddActivityScreen');
       if (mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('경로 검색에 실패했습니다'),
-            backgroundColor: AppColors.error,
+          SnackBar(
+            content: const Text('경로 검색에 실패했습니다'),
+            backgroundColor: colors.error,
           ),
         );
       }
@@ -719,9 +741,12 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
   /// 경로 선택 다이얼로그
   void _showRouteSelectionDialog() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('경로 선택'),
         content: SizedBox(
           width: double.maxFinite,
@@ -737,7 +762,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                     setState(() {
                       _selectedRoute = route;
                     });
-                    Navigator.pop(context);
+                    Navigator.pop(dialogContext);
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
@@ -748,9 +773,9 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                         // 경로 번호
                         Text(
                           '경로 ${index + 1}',
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: textStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -759,16 +784,16 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                             route.arrivalLocation != null)
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.location_on,
                                 size: 14,
-                                color: AppColors.textSecondary,
+                                color: colors.textSecondary,
                               ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   '${route.departureLocation} → ${route.arrivalLocation}',
-                                  style: AppTextStyles.bodySmall.copyWith(
+                                  style: textStyles.bodySmall.copyWith(
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -779,29 +804,29 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                         // 소요 시간 및 거리
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.access_time,
                               size: 14,
-                              color: AppColors.primary,
+                              color: colors.primary,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '${route.durationMinutes}분',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.primary,
+                              style: textStyles.bodySmall.copyWith(
+                                color: colors.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(width: 16),
-                            const Icon(
+                            Icon(
                               Icons.straighten,
                               size: 14,
-                              color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               route.distance,
-                              style: AppTextStyles.bodySmall,
+                              style: textStyles.bodySmall,
                             ),
                           ],
                         ),
@@ -820,13 +845,13 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color:
-                                            AppColors.primary.withValues(alpha: 0.1),
+                                            colors.primary.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         '${step.name} (${step.duration})',
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: AppColors.primary,
+                                        style: textStyles.bodySmall.copyWith(
+                                          color: colors.primary,
                                           fontSize: 11,
                                         ),
                                       ),
@@ -839,8 +864,8 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                           const SizedBox(height: 4),
                           Text(
                             route.details!,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                            style: textStyles.bodySmall.copyWith(
+                              color: colors.textSecondary,
                               fontSize: 11,
                             ),
                             maxLines: 2,
@@ -857,7 +882,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소'),
           ),
         ],
@@ -960,6 +985,7 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
 
       if (mounted) {
         Navigator.pop(context);
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -967,17 +993,18 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
                   ? '활동이 추가되었습니다'
                   : '활동이 수정되었습니다',
             ),
-            backgroundColor: AppColors.success,
+            backgroundColor: colors.success,
           ),
         );
       }
     } catch (e, stackTrace) {
       Logger.error('활동 저장 실패', e, stackTrace, 'AddActivityScreen');
       if (mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('활동 저장에 실패했습니다'),
-            backgroundColor: AppColors.error,
+          SnackBar(
+            content: const Text('활동 저장에 실패했습니다'),
+            backgroundColor: colors.error,
           ),
         );
       }
@@ -991,26 +1018,28 @@ class _AddActivityScreenState extends ConsumerState<AddActivityScreen> {
   }
 }
 
-/// ActivityType 확장 - 색상 추가 (activity_card.dart와 동일)
+/// ActivityType 확장 - 테마 기반 색상 (activity_card.dart와 동일)
 extension ActivityTypeColor on ActivityType {
-  Color get color {
+  Color getColor(BuildContext context) {
+    final colors = AppColors.of(context);
+
     switch (this) {
       case ActivityType.visit:
-        return AppColors.primary;
+        return colors.primary;
       case ActivityType.meal:
-        return AppColors.warning;
+        return colors.warning;
       case ActivityType.accommodation:
-        return AppColors.info;
+        return colors.info;
       case ActivityType.transportation:
-        return AppColors.textSecondary;
+        return colors.textSecondary;
       case ActivityType.shopping:
         return const Color(0xFFE91E63);
       case ActivityType.activity:
-        return AppColors.success;
+        return colors.success;
       case ActivityType.rest:
         return const Color(0xFF9C27B0);
       case ActivityType.other:
-        return AppColors.textSecondary;
+        return colors.textSecondary;
     }
   }
 }

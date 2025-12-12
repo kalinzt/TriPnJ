@@ -34,18 +34,22 @@ class _PlanScreenState extends ConsumerState<PlanScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('📅 여행 계획'),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
-          labelStyle: AppTextStyles.titleSmall.copyWith(
+          labelColor: colors.primary, // ✅ 테마 기반 색상
+          unselectedLabelColor: colors.textSecondary, // ✅ 테마 기반 색상
+          indicatorColor: colors.primary, // ✅ 테마 기반 색상
+          labelStyle: textStyles.labelLarge.copyWith( // ✅ 테마 기반 텍스트
             fontWeight: FontWeight.w600,
           ),
-          unselectedLabelStyle: AppTextStyles.titleSmall,
+          unselectedLabelStyle: textStyles.labelLarge, // ✅ 테마 기반 텍스트
           tabs: const [
             Tab(text: '예정/진행'),
             Tab(text: '완료'),
@@ -59,17 +63,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen>
           _buildCompletedTab(),
         ],
       ),
+      // FloatingActionButton 색상은 ThemeData에서 자동 적용
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addNewPlan,
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          '새 계획 추가',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        icon: const Icon(Icons.add),
+        label: const Text('새 계획 추가'),
       ),
     );
   }
@@ -162,6 +160,10 @@ class _PlanScreenState extends ConsumerState<PlanScreen>
     required String title,
     required String subtitle,
   }) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -169,19 +171,19 @@ class _PlanScreenState extends ConsumerState<PlanScreen>
           Icon(
             icon,
             size: 80,
-            color: AppColors.textHint,
+            color: colors.textHint, // ✅ 테마 기반 색상
           ),
           const SizedBox(height: 24),
           Text(
             title,
-            style: AppTextStyles.titleLarge,
+            style: textStyles.heading4, // ✅ 테마 기반 텍스트
           ),
           const SizedBox(height: 12),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+            style: textStyles.bodyMedium.copyWith(
+              color: colors.textSecondary, // ✅ 테마 기반 색상
             ),
           ),
         ],
@@ -191,31 +193,36 @@ class _PlanScreenState extends ConsumerState<PlanScreen>
 
   /// 에러 뷰
   Widget _buildErrorView(String errorMessage) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 64,
-              color: AppColors.error,
+              color: colors.error, // ✅ 테마 기반 색상
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               '오류 발생',
-              style: AppTextStyles.titleMedium,
+              style: textStyles.heading4, // ✅ 테마 기반 텍스트
             ),
             const SizedBox(height: 8),
             Text(
               errorMessage,
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodyMedium.copyWith(
+                color: colors.textSecondary, // ✅ 테마 기반 색상
               ),
             ),
             const SizedBox(height: 24),
+            // ElevatedButton 색상은 ThemeData에서 자동 적용
             ElevatedButton.icon(
               onPressed: () {
                 ref.invalidate(plannedAndOngoingTravelsProvider);

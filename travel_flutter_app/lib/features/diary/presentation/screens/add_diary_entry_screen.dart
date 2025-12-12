@@ -34,8 +34,8 @@ class _AddDiaryEntryScreenState extends State<AddDiaryEntryScreen> {
 
   // State
   String _selectedWeather = 'sunny';
-  List<DiaryPhoto> _photos = [];
-  List<DiaryExpense> _expenses = [];
+  final List<DiaryPhoto> _photos = [];
+  final List<DiaryExpense> _expenses = [];
 
   @override
   void dispose() {
@@ -376,9 +376,9 @@ class _AddDiaryEntryScreenState extends State<AddDiaryEntryScreen> {
                             right: 0,
                             child: Container(
                               padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: Colors.black54,
-                                borderRadius: const BorderRadius.only(
+                                borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(8),
                                   bottomRight: Radius.circular(8),
                                 ),

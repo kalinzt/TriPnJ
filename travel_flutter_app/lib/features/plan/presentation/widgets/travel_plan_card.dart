@@ -19,11 +19,16 @@ class TravelPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Dismissible(
       key: Key(plan.id),
       direction: onDelete != null ? DismissDirection.endToStart : DismissDirection.none,
-      background: _buildDismissBackground(),
+      background: _buildDismissBackground(context),
       confirmDismiss: (direction) async {
+        final dialogColors = AppColors.of(context);
         return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -37,7 +42,7 @@ class TravelPlanCard extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
+                  foregroundColor: dialogColors.error,
                 ),
                 child: const Text('삭제'),
               ),
@@ -70,7 +75,7 @@ class TravelPlanCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         plan.name,
-                        style: AppTextStyles.titleMedium.copyWith(
+                        style: textStyles.heading4.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 1,
@@ -78,7 +83,7 @@ class TravelPlanCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    _buildStatusBadge(),
+                    _buildStatusBadge(context),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -86,16 +91,16 @@ class TravelPlanCard extends StatelessWidget {
                 // 목적지
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.location_on,
                       size: 18,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         plan.destination,
-                        style: AppTextStyles.bodyMedium,
+                        style: textStyles.bodyMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -107,23 +112,23 @@ class TravelPlanCard extends StatelessWidget {
                 // 날짜
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today,
                       size: 18,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       _formatDateRange(),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                      style: textStyles.bodySmall.copyWith(
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '(${plan.duration}일)',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                      style: textStyles.bodySmall.copyWith(
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
@@ -134,16 +139,16 @@ class TravelPlanCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.attach_money,
                         size: 18,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         _formatBudget(plan.budget!),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                        style: textStyles.bodySmall.copyWith(
+                          color: colors.textSecondary,
                         ),
                       ),
                     ],
@@ -158,7 +163,9 @@ class TravelPlanCard extends StatelessWidget {
   }
 
   /// 상태 배지 빌드
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final status = plan.travelStatus;
     Color backgroundColor;
     Color textColor;
@@ -166,18 +173,18 @@ class TravelPlanCard extends StatelessWidget {
 
     switch (status) {
       case TravelStatus.planned:
-        backgroundColor = AppColors.primary.withValues(alpha: 0.1);
-        textColor = AppColors.primary;
+        backgroundColor = colors.primary.withValues(alpha: 0.1);
+        textColor = colors.primary;
         label = '계획됨';
         break;
       case TravelStatus.inProgress:
-        backgroundColor = AppColors.success.withValues(alpha: 0.1);
-        textColor = AppColors.success;
+        backgroundColor = colors.success.withValues(alpha: 0.1);
+        textColor = colors.success;
         label = '진행 중';
         break;
       case TravelStatus.completed:
-        backgroundColor = AppColors.textHint.withValues(alpha: 0.1);
-        textColor = AppColors.textSecondary;
+        backgroundColor = colors.textHint.withValues(alpha: 0.1);
+        textColor = colors.textSecondary;
         label = '완료';
         break;
     }
@@ -190,7 +197,7 @@ class TravelPlanCard extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppTextStyles.labelSmall.copyWith(
+        style: textStyles.labelSmall.copyWith(
           color: textColor,
           fontWeight: FontWeight.w600,
         ),
@@ -213,12 +220,14 @@ class TravelPlanCard extends StatelessWidget {
   }
 
   /// Dismissible 배경
-  Widget _buildDismissBackground() {
+  Widget _buildDismissBackground(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Container(
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(right: 20),
       decoration: BoxDecoration(
-        color: AppColors.error,
+        color: colors.error,
         borderRadius: BorderRadius.circular(16),
       ),
       child: const Icon(

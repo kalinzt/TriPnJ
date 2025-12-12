@@ -197,17 +197,19 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         _isEditing = false;
       });
 
+      final colors = AppColors.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('여행 계획이 수정되었습니다.'),
-          backgroundColor: AppColors.success,
+        SnackBar(
+          content: const Text('여행 계획이 수정되었습니다.'),
+          backgroundColor: colors.success,
         ),
       );
     } else if (mounted) {
+      final colors = AppColors.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('여행 계획 수정에 실패했습니다.'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('여행 계획 수정에 실패했습니다.'),
+          backgroundColor: colors.error,
         ),
       );
     }
@@ -218,6 +220,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
   // ============================================
 
   Future<void> _deletePlan() async {
+    final colors = AppColors.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -231,7 +234,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
+              foregroundColor: colors.error,
             ),
             child: const Text('삭제'),
           ),
@@ -244,10 +247,11 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
       if (success && mounted) {
         Navigator.of(context).pop(true);
+        final successColors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('여행 계획이 삭제되었습니다.'),
-            backgroundColor: AppColors.success,
+          SnackBar(
+            content: const Text('여행 계획이 삭제되었습니다.'),
+            backgroundColor: successColors.success,
           ),
         );
       }
@@ -256,6 +260,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_editedPlan.name),
@@ -263,10 +271,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
           if (_isEditing)
             TextButton(
               onPressed: _savePlan,
-              child: const Text(
+              child: Text(
                 '저장',
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: colors.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -321,15 +329,19 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
   /// 정보 탭 (기존 내용)
   Widget _buildInfoTab() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         // 상태 배지
-        _buildStatusBadge(),
+        _buildStatusBadge(context),
         const SizedBox(height: 24),
 
         // 여행명
         _buildInfoSection(
+          context,
           icon: Icons.flight_takeoff,
           label: '여행명',
           child: _isEditing
@@ -342,7 +354,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                 )
               : Text(
                   _editedPlan.name,
-                  style: AppTextStyles.titleLarge.copyWith(
+                  style: textStyles.heading3.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -351,6 +363,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
         // 목적지
         _buildInfoSection(
+          context,
           icon: Icons.location_on,
           label: '목적지',
           child: _isEditing
@@ -363,13 +376,14 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                 )
               : Text(
                   _editedPlan.destination,
-                  style: AppTextStyles.bodyLarge,
+                  style: textStyles.bodyLarge,
                 ),
         ),
         const SizedBox(height: 20),
 
         // 기간
         _buildInfoSection(
+          context,
           icon: Icons.calendar_today,
           label: '기간',
           child: _isEditing
@@ -377,12 +391,14 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildEditableDateField(
+                      context,
                       label: '시작 날짜',
                       date: _editedPlan.startDate,
                       onTap: _selectStartDate,
                     ),
                     const SizedBox(height: 12),
                     _buildEditableDateField(
+                      context,
                       label: '종료 날짜',
                       date: _editedPlan.endDate,
                       onTap: _selectEndDate,
@@ -394,13 +410,13 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                   children: [
                     Text(
                       _formatDateRange(),
-                      style: AppTextStyles.bodyLarge,
+                      style: textStyles.bodyLarge,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${_editedPlan.duration}일',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                      style: textStyles.bodyMedium.copyWith(
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
@@ -410,6 +426,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
         // 예산
         _buildInfoSection(
+          context,
           icon: Icons.attach_money,
           label: '예산',
           child: _isEditing
@@ -430,7 +447,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                   _editedPlan.budget != null
                       ? '${NumberFormat('#,###').format(_editedPlan.budget!)}원'
                       : '설정 안 함',
-                  style: AppTextStyles.bodyLarge,
+                  style: textStyles.bodyLarge,
                 ),
         ),
         const SizedBox(height: 20),
@@ -438,6 +455,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         // 설명
         if (_editedPlan.description != null || _isEditing)
           _buildInfoSection(
+            context,
             icon: Icons.description,
             label: '설명',
             child: _isEditing
@@ -451,7 +469,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                   )
                 : Text(
                     _editedPlan.description ?? '',
-                    style: AppTextStyles.bodyMedium,
+                    style: textStyles.bodyMedium,
                   ),
           ),
       ],
@@ -459,7 +477,9 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
   }
 
   /// 상태 배지
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final status = _editedPlan.travelStatus;
     Color backgroundColor;
     Color textColor;
@@ -468,20 +488,20 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
     switch (status) {
       case TravelStatus.planned:
-        backgroundColor = AppColors.primary.withValues(alpha: 0.1);
-        textColor = AppColors.primary;
+        backgroundColor = colors.primary.withValues(alpha: 0.1);
+        textColor = colors.primary;
         label = '계획됨';
         icon = Icons.event_note;
         break;
       case TravelStatus.inProgress:
-        backgroundColor = AppColors.success.withValues(alpha: 0.1);
-        textColor = AppColors.success;
+        backgroundColor = colors.success.withValues(alpha: 0.1);
+        textColor = colors.success;
         label = '진행 중';
         icon = Icons.flight;
         break;
       case TravelStatus.completed:
-        backgroundColor = AppColors.textHint.withValues(alpha: 0.1);
-        textColor = AppColors.textSecondary;
+        backgroundColor = colors.textHint.withValues(alpha: 0.1);
+        textColor = colors.textSecondary;
         label = '완료';
         icon = Icons.check_circle;
         break;
@@ -500,7 +520,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
           const SizedBox(width: 8),
           Text(
             label,
-            style: AppTextStyles.titleSmall.copyWith(
+            style: textStyles.labelLarge.copyWith(
               color: textColor,
               fontWeight: FontWeight.w600,
             ),
@@ -511,23 +531,27 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
   }
 
   /// 정보 섹션
-  Widget _buildInfoSection({
+  Widget _buildInfoSection(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required Widget child,
   }) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: AppColors.primary),
+            Icon(icon, size: 20, color: colors.primary),
             const SizedBox(width: 8),
             Text(
               label,
-              style: AppTextStyles.titleSmall.copyWith(
+              style: textStyles.labelLarge.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ),
           ],
@@ -539,11 +563,14 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
   }
 
   /// 편집 가능한 날짜 필드
-  Widget _buildEditableDateField({
+  Widget _buildEditableDateField(
+    BuildContext context, {
     required String label,
     required DateTime date,
     required VoidCallback onTap,
   }) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final dateFormatter = DateFormat('yyyy년 M월 d일');
 
     return InkWell(
@@ -551,27 +578,27 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
             Text(
               label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
               ),
             ),
             const Spacer(),
             Text(
               dateFormatter.format(date),
-              style: AppTextStyles.bodyMedium,
+              style: textStyles.bodyMedium,
             ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               Icons.calendar_today,
               size: 18,
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ],
         ),
@@ -581,6 +608,9 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
   /// 일정 탭
   Widget _buildScheduleListTab() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     if (_isLoadingSchedules) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -617,8 +647,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                     children: [
                       Text(
                         '${date.year}년 ${date.month}월 ${date.day}일',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: textStyles.heading4.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -634,11 +663,13 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
 
                   // 활동 목록
                   if (schedule == null || schedule.activities.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         '일정 없음',
-                        style: TextStyle(color: Colors.grey),
+                        style: textStyles.bodyMedium.copyWith(
+                          color: colors.textHint,
+                        ),
                       ),
                     )
                   else
@@ -672,23 +703,23 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                                         children: [
                                           Text(
                                             activity.title,
-                                            style: AppTextStyles.bodyMedium.copyWith(
+                                            style: textStyles.bodyMedium.copyWith(
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
                                             '${_formatTime(activity.startTime)} - ${_formatTime(activity.endTime)}',
-                                            style: AppTextStyles.bodySmall.copyWith(
-                                              color: AppColors.textSecondary,
+                                            style: textStyles.bodySmall.copyWith(
+                                              color: colors.textSecondary,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const Icon(
+                                    Icon(
                                       Icons.chevron_right,
-                                      color: AppColors.textSecondary,
+                                      color: colors.textSecondary,
                                     ),
                                   ],
                                 ),
@@ -697,7 +728,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                                   const SizedBox(height: 12),
                                   const Divider(height: 1),
                                   const SizedBox(height: 12),
-                                  _buildRouteInfoCompact(activity.selectedRoute!),
+                                  _buildRouteInfoCompact(context, activity.selectedRoute!),
                                 ],
                               ],
                             ),
@@ -805,7 +836,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
   }
 
   /// 경로 정보 표시 (구글 스타일)
-  Widget _buildRouteInfoCompact(selectedRoute) {
+  Widget _buildRouteInfoCompact(BuildContext context, selectedRoute) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -813,24 +847,24 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         if (selectedRoute.departureLocation != null && selectedRoute.arrivalLocation != null)
           Row(
             children: [
-              const Icon(Icons.trip_origin, size: 12, color: AppColors.textSecondary),
+              Icon(Icons.trip_origin, size: 12, color: colors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 selectedRoute.departureLocation!,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                style: textStyles.bodySmall.copyWith(
+                  color: colors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward, size: 12, color: AppColors.textSecondary),
+              Icon(Icons.arrow_forward, size: 12, color: colors.textSecondary),
               const SizedBox(width: 8),
-              const Icon(Icons.location_on, size: 12, color: AppColors.textSecondary),
+              Icon(Icons.location_on, size: 12, color: colors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 selectedRoute.arrivalLocation!,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                style: textStyles.bodySmall.copyWith(
+                  color: colors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -841,7 +875,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         if (selectedRoute.transportOptions != null && selectedRoute.transportOptions!.isNotEmpty) ...[
           // 대중교통 step만 필터링 (도보 제외)
           Builder(
-            builder: (context) {
+            builder: (builderContext) {
               final transitSteps = selectedRoute.transportOptions!.where((step) => step.type == 'transit').toList();
               if (transitSteps.isEmpty) return const SizedBox.shrink();
 
@@ -849,7 +883,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
                 spacing: 6,
                 runSpacing: 6,
                 children: transitSteps.map<Widget>((step) {
-                  return _buildTransportBadge(step);
+                  return _buildTransportBadge(context, step);
                 }).toList(),
               );
             },
@@ -859,21 +893,21 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         // 소요 시간, 거리, 상세보기 버튼
         Row(
           children: [
-            const Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
+            Icon(Icons.access_time, size: 14, color: colors.textSecondary),
             const SizedBox(width: 4),
             Text(
               '약 ${selectedRoute.durationMinutes}분',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodySmall.copyWith(
+                color: colors.textSecondary,
               ),
             ),
             const SizedBox(width: 12),
-            const Icon(Icons.straighten, size: 14, color: AppColors.textSecondary),
+            Icon(Icons.straighten, size: 14, color: colors.textSecondary),
             const SizedBox(width: 4),
             Text(
               selectedRoute.distance,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodySmall.copyWith(
+                color: colors.textSecondary,
               ),
             ),
             const Spacer(),
@@ -885,25 +919,25 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       '상세보기',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primary,
+                      style: textStyles.bodySmall.copyWith(
+                        color: colors.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right,
                       size: 14,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                   ],
                 ),
@@ -916,7 +950,10 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
   }
 
   /// 교통 수단 뱃지 (노선 번호만 표시, 소요시간 제거)
-  Widget _buildTransportBadge(step) {
+  Widget _buildTransportBadge(BuildContext context, step) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     Color badgeColor;
     IconData icon;
 
@@ -943,7 +980,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
         icon = Icons.directions_walk;
         break;
       default:
-        badgeColor = AppColors.primary;
+        badgeColor = colors.primary;
         icon = Icons.directions_transit;
     }
 
@@ -961,7 +998,7 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen>
           const SizedBox(width: 6),
           Text(
             step.name,  // 노선 번호/이름 (예: "9호선", "740")
-            style: AppTextStyles.bodySmall.copyWith(
+            style: textStyles.bodySmall.copyWith(
               color: badgeColor,
               fontWeight: FontWeight.w600,
             ),

@@ -33,6 +33,8 @@ class DiaryScreen extends ConsumerWidget {
 
   /// 여행 계획 목록 (상태별 카테고리화)
   Widget _buildPlanList(BuildContext context, List<TravelPlan> plans) {
+    final colors = AppColors.of(context);
+
     // 상태별로 그룹화
     final inProgressPlans = plans.where((plan) => plan.travelStatus == TravelStatus.inProgress).toList();
     final plannedPlans = plans.where((plan) => plan.travelStatus == TravelStatus.planned).toList();
@@ -53,7 +55,7 @@ class DiaryScreen extends ConsumerWidget {
             title: '진행중',
             icon: Icons.flight_takeoff,
             plans: sortedInProgress,
-            color: AppColors.primary,
+            color: colors.primary,
           ),
         if (sortedInProgress.isNotEmpty) const SizedBox(height: 12),
 
@@ -64,7 +66,7 @@ class DiaryScreen extends ConsumerWidget {
             title: '예정됨',
             icon: Icons.edit_calendar,
             plans: sortedPlanned,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         if (sortedPlanned.isNotEmpty) const SizedBox(height: 12),
 
@@ -75,7 +77,7 @@ class DiaryScreen extends ConsumerWidget {
             title: '완료됨',
             icon: Icons.done_all,
             plans: sortedCompleted,
-            color: AppColors.textHint,
+            color: colors.textHint,
           ),
       ],
     );
@@ -89,6 +91,9 @@ class DiaryScreen extends ConsumerWidget {
     required List<TravelPlan> plans,
     required Color color,
   }) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Card(
       elevation: 2,
       child: ExpansionTile(
@@ -100,15 +105,15 @@ class DiaryScreen extends ConsumerWidget {
         leading: Icon(icon, color: color),
         title: Text(
           title,
-          style: AppTextStyles.titleMedium.copyWith(
+          style: textStyles.labelLarge.copyWith(
             color: color,
             fontWeight: FontWeight.w600,
           ),
         ),
         subtitle: Text(
           '여행 ${plans.length}',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+          style: textStyles.bodySmall.copyWith(
+            color: colors.textSecondary,
           ),
         ),
         children: plans.map((plan) {
@@ -125,12 +130,12 @@ class DiaryScreen extends ConsumerWidget {
             ),
             title: Text(
               plan.name,
-              style: AppTextStyles.titleSmall,
+              style: textStyles.labelLarge,
             ),
             subtitle: Text(
               _formatDateRange(plan),
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodySmall.copyWith(
+                color: colors.textSecondary,
               ),
             ),
             trailing: const Icon(Icons.chevron_right, size: 20),
@@ -179,26 +184,29 @@ class DiaryScreen extends ConsumerWidget {
 
   /// 빈 상태 뷰
   Widget _buildEmptyView(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.book_outlined,
             size: 80,
-            color: AppColors.textHint,
+            color: colors.textHint,
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             '여행 계획이 없습니다',
-            style: AppTextStyles.titleLarge,
+            style: textStyles.heading4,
           ),
           const SizedBox(height: 12),
           Text(
             '계획 탭에서 여행 계획을\n먼저 생성해주세요',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+            style: textStyles.bodyMedium.copyWith(
+              color: colors.textSecondary,
             ),
           ),
         ],
@@ -208,28 +216,31 @@ class DiaryScreen extends ConsumerWidget {
 
   /// 에러 뷰
   Widget _buildErrorView(BuildContext context, String errorMessage) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 64,
-              color: AppColors.error,
+              color: colors.error,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               '오류 발생',
-              style: AppTextStyles.titleMedium,
+              style: textStyles.labelLarge,
             ),
             const SizedBox(height: 8),
             Text(
               errorMessage,
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: textStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
               ),
             ),
           ],

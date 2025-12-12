@@ -63,6 +63,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final allDates = widget.plan.allDates;
 
     return Scaffold(
@@ -70,10 +72,10 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.plan.name, style: const TextStyle(fontSize: 18)),
+            Text(widget.plan.name, style: textStyles.labelLarge),
             Text(
               '${widget.plan.destination} 다이어리',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              style: textStyles.bodySmall.copyWith(fontWeight: FontWeight.normal),
             ),
           ],
         ),
@@ -99,6 +101,9 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   /// 날짜 선택기
   Widget _buildDateSelector(List<DateTime> allDates) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -121,9 +126,9 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
               width: 60,
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.white,
+                color: isSelected ? colors.primary : colors.surface,
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                  color: isSelected ? colors.primary : colors.border,
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -132,18 +137,16 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                 children: [
                   Text(
                     DateFormat('M/d').format(date),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isSelected ? Colors.white : Colors.grey[600],
+                    style: textStyles.bodySmall.copyWith(
+                      color: isSelected ? colors.surface : colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     DateFormat('E', 'ko_KR').format(date),
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: textStyles.labelMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : Colors.black,
+                      color: isSelected ? colors.surface : colors.textPrimary,
                     ),
                   ),
                   if (hasEntry) ...[
@@ -152,7 +155,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white : AppColors.primary,
+                        color: isSelected ? colors.surface : colors.primary,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -187,6 +190,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
       return _buildEmptyDiaryView();
     }
 
+    final textStyles = AppTextStyles.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -199,8 +204,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
               Expanded(
                 child: Text(
                   entry.title,
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: textStyles.heading3.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -235,19 +239,22 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   /// 빈 다이어리 뷰
   Widget _buildEmptyDiaryView() {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.edit_note,
             size: 64,
-            color: AppColors.textHint,
+            color: colors.textHint,
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             '아직 작성된 다이어리가 없습니다',
-            style: AppTextStyles.titleMedium,
+            style: textStyles.labelLarge,
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -255,8 +262,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             icon: const Icon(Icons.add),
             label: const Text('다이어리 작성하기'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: colors.primary,
+              foregroundColor: colors.surface,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
@@ -267,12 +274,14 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   /// 날씨 섹션
   Widget _buildWeatherSection(DiaryEntry entry) {
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '날씨',
-          style: AppTextStyles.titleSmall,
+          style: textStyles.labelLarge,
         ),
         const SizedBox(height: 12),
         Row(
@@ -281,7 +290,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
             const SizedBox(width: 12),
             Text(
               _getWeatherText(entry.weather),
-              style: AppTextStyles.bodyLarge,
+              style: textStyles.bodyLarge,
             ),
           ],
         ),
@@ -291,29 +300,34 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   /// 가계부 섹션
   Widget _buildExpensesSection(DiaryEntry entry) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               '가계부',
-              style: AppTextStyles.titleSmall,
+              style: textStyles.labelLarge,
             ),
             Text(
               '총 ${NumberFormat('#,###').format(entry.totalExpense)}원',
-              style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.primary,
+              style: textStyles.labelLarge.copyWith(
+                color: colors.primary,
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
         if (entry.expenses.isEmpty)
-          const Text(
+          Text(
             '등록된 지출 내역이 없습니다',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: textStyles.bodyMedium.copyWith(
+              color: colors.textSecondary,
+            ),
           )
         else
           ...entry.expenses.map((expense) => Padding(
@@ -324,12 +338,12 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
                     Expanded(
                       child: Text(
                         expense.activityName,
-                        style: AppTextStyles.bodyMedium,
+                        style: textStyles.bodyMedium,
                       ),
                     ),
                     Text(
                       '${NumberFormat('#,###').format(expense.amount)}원',
-                      style: AppTextStyles.bodyMedium.copyWith(
+                      style: textStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -342,18 +356,21 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   /// 메모 섹션
   Widget _buildNotesSection(DiaryEntry entry) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '오늘의 기록',
-          style: AppTextStyles.titleSmall,
+          style: textStyles.labelLarge,
         ),
         const SizedBox(height: 12),
         Text(
           entry.notes ?? '작성된 기록이 없습니다',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: entry.notes == null ? AppColors.textSecondary : Colors.black,
+          style: textStyles.bodyMedium.copyWith(
+            color: entry.notes == null ? colors.textSecondary : colors.textPrimary,
           ),
         ),
       ],
@@ -362,18 +379,23 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
   /// 사진 섹션
   Widget _buildPhotosSection(DiaryEntry entry) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '사진',
-          style: AppTextStyles.titleSmall,
+          style: textStyles.labelLarge,
         ),
         const SizedBox(height: 12),
         if (entry.photos.isEmpty)
-          const Text(
+          Text(
             '등록된 사진이 없습니다',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: textStyles.bodyMedium.copyWith(
+              color: colors.textSecondary,
+            ),
           )
         else
           GridView.builder(

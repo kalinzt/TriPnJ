@@ -4,6 +4,8 @@ import '../../data/repositories/activity_repository.dart';
 import '../../data/repositories/daily_schedule_repository.dart';
 import '../../../../core/services/directions_service.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_text_styles.dart';
 import '../../../plan/data/models/route_option_model.dart';
 import '../widgets/route_info_card.dart';
 
@@ -123,12 +125,16 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
 
   /// 경로 검색
   Future<void> _searchRoutes() async {
+    final colors = AppColors.of(context);
     final departure = _departureController.text.trim();
     final arrival = _arrivalController.text.trim();
 
     if (departure.isEmpty || arrival.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('출발지와 도착지를 입력해주세요')),
+        SnackBar(
+          content: const Text('출발지와 도착지를 입력해주세요'),
+          backgroundColor: colors.warning,
+        ),
       );
       return;
     }
@@ -155,8 +161,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
 
       if (routes.isEmpty) {
         if (mounted) {
+          final colors = AppColors.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('경로를 찾을 수 없습니다')),
+            SnackBar(
+              content: const Text('경로를 찾을 수 없습니다'),
+              backgroundColor: colors.warning,
+            ),
           );
         }
       } else {
@@ -170,8 +180,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       appLogger.e('경로 검색 에러: $e');
 
       if (mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('경로 검색 실패: $e')),
+          SnackBar(
+            content: Text('경로 검색 실패: $e'),
+            backgroundColor: colors.error,
+          ),
         );
       }
     }
@@ -202,8 +216,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
 
     appLogger.i('경로 선택: ${route.routeId}, 소요 시간: ${route.durationMinutes}분');
 
+    final colors = AppColors.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('경로가 선택되었습니다')),
+      SnackBar(
+        content: const Text('경로가 선택되었습니다'),
+        backgroundColor: colors.success,
+      ),
     );
   }
 
@@ -231,8 +249,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
     );
 
     if (endDateTime.isBefore(startDateTime)) {
+      final colors = AppColors.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('종료 시간은 시작 시간 이후여야 합니다')),
+        SnackBar(
+          content: const Text('종료 시간은 시작 시간 이후여야 합니다'),
+          backgroundColor: colors.warning,
+        ),
       );
       return;
     }
@@ -268,8 +290,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       appLogger.i('Activity 수정 완료: ${updatedActivity.id}');
 
       if (mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('스케줄이 수정되었습니다')),
+          SnackBar(
+            content: const Text('스케줄이 수정되었습니다'),
+            backgroundColor: colors.success,
+          ),
         );
         Navigator.pop(context, true);
       }
@@ -277,8 +303,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       appLogger.e('Activity 수정 실패: $e');
 
       if (mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('수정 실패: $e')),
+          SnackBar(
+            content: Text('수정 실패: $e'),
+            backgroundColor: colors.error,
+          ),
         );
       }
     }
@@ -286,6 +316,8 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
 
   /// Activity 삭제
   Future<void> _deleteActivity() async {
+    final colors = AppColors.of(context);
+
     // 삭제 확인 대화상자
     final confirmed = await showDialog<bool>(
       context: context,
@@ -299,7 +331,7 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: colors.error),
             child: const Text('삭제'),
           ),
         ],
@@ -315,8 +347,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       appLogger.i('Activity 삭제 완료');
 
       if (mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('스케줄이 삭제되었습니다')),
+          SnackBar(
+            content: const Text('스케줄이 삭제되었습니다'),
+            backgroundColor: colors.success,
+          ),
         );
         Navigator.pop(context, true);
       }
@@ -324,8 +360,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
       appLogger.e('Activity 삭제 실패: $e');
 
       if (mounted) {
+        final colors = AppColors.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('삭제 실패: $e')),
+          SnackBar(
+            content: Text('삭제 실패: $e'),
+            backgroundColor: colors.error,
+          ),
         );
       }
     }
@@ -333,6 +373,10 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 테마 시스템 적용
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('스케줄 편집'),
@@ -344,9 +388,12 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
           ),
           TextButton(
             onPressed: _updateActivity,
-            child: const Text(
+            child: Text(
               '저장',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: textStyles.labelLarge.copyWith(
+                color: colors.surface,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -484,9 +531,11 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
 
             // 경로 검색 결과
             if (_selectedRoute != null) ...[
-              const Text(
+              Text(
                 '선택된 경로',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: textStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               RouteInfoCard(
@@ -504,9 +553,11 @@ class _EditScheduleScreenState extends State<EditScheduleScreen> {
               ),
               const SizedBox(height: 16),
             ] else if (_routeOptions != null && _routeOptions!.isNotEmpty) ...[
-              const Text(
+              Text(
                 '경로 옵션',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: textStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               ...(_routeOptions!.map((route) => RouteInfoCard(

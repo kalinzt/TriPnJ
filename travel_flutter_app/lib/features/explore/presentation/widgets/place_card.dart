@@ -67,6 +67,8 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     final category = getCategoryFromPlaceTypes(widget.place.types);
     final photoUrl = _getPhotoUrl();
 
@@ -75,11 +77,11 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: colors.textPrimary.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -103,7 +105,7 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
                         Expanded(
                           child: Text(
                             widget.place.name,
-                            style: AppTextStyles.titleSmall.copyWith(
+                            style: textStyles.labelLarge.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -119,8 +121,8 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
                     // 주소
                     Text(
                       widget.place.address,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                      style: textStyles.bodySmall.copyWith(
+                        color: colors.textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -133,15 +135,15 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
                       children: [
                         // 평점
                         if (widget.place.rating != null) ...[
-                          const Icon(
+                          Icon(
                             Icons.star,
                             size: 16,
-                            color: AppColors.warning,
+                            color: colors.warning,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             widget.place.rating!.toStringAsFixed(1),
-                            style: AppTextStyles.bodySmall.copyWith(
+                            style: textStyles.bodySmall.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -149,8 +151,8 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
                             const SizedBox(width: 2),
                             Text(
                               '(${widget.place.userRatingsTotal})',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
+                              style: textStyles.bodySmall.copyWith(
+                                color: colors.textSecondary,
                               ),
                             ),
                           ],
@@ -178,7 +180,7 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
                               const SizedBox(width: 4),
                               Text(
                                 category.displayName,
-                                style: AppTextStyles.bodySmall.copyWith(
+                                style: textStyles.bodySmall.copyWith(
                                   color: category.color,
                                   fontWeight: FontWeight.w500,
                                   fontSize: 11,
@@ -251,6 +253,8 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
 
   /// 즐겨찾기 버튼
   Widget _buildFavoriteButton() {
+    final colors = AppColors.of(context);
+
     return GestureDetector(
       onTap: _toggleFavorite,
       child: Container(
@@ -258,7 +262,7 @@ class _PlaceCardState extends ConsumerState<PlaceCard> {
         child: Icon(
           _isFavorite ? Icons.favorite : Icons.favorite_border,
           size: 20,
-          color: _isFavorite ? AppColors.error : AppColors.textSecondary,
+          color: _isFavorite ? colors.error : colors.textSecondary,
         ),
       ),
     );
